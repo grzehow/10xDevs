@@ -112,7 +112,7 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
+The starter uses only Supabase Auth's built-in `auth.users` table. The NOC Priority app adds migrations in `supabase/migrations/` for weights, weight-change history and the two shared accounts — see `CLAUDE.md`.
 
 ### Using a cloud Supabase project instead
 
@@ -128,9 +128,9 @@ SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_KEY=<anon-key>
 ```
 
-### Email confirmation in local development
+### Email confirmation (cloud projects)
 
-By default Supabase requires email confirmation before a user can sign in. To skip this during local development:
+The local stack already has email confirmation off (`supabase/config.toml`). A cloud project requires it by default; to turn it off:
 
 1. Open the Supabase dashboard for your project
 2. Go to **Authentication → Email → Confirm email**
@@ -139,6 +139,8 @@ By default Supabase requires email confirmation before a user can sign in. To sk
 Users can then sign in immediately after sign-up without clicking a confirmation link.
 
 ### Auth routes
+
+These are the starter's routes. The NOC Priority app uses two shared accounts (operator, admin) with no signup flow, so `/auth/signup` and `/auth/confirm-email` are due to be removed.
 
 | Route                 | Description                                                             |
 | --------------------- | ----------------------------------------------------------------------- |

@@ -2,8 +2,8 @@
   "package": "@przeprogramowani/10x-cli",
   "version": "1.22.0",
   "manifestVersion": 3,
-  "lastApplied": "2026-09-24T07:30:12.177Z",
-  "lessonId": "m1l4",
+  "lastApplied": "2026-09-24T08:18:28.300Z",
+  "lessonId": "m1l3",
   "course": "10xdevs4",
   "tool": "claude-code",
   "files": {
@@ -158,7 +158,7 @@
   },
   "lessons": {
     "m1l1": {
-      "appliedAt": "2026-09-17T09:52:21.426Z",
+      "appliedAt": "2026-09-24T08:18:11.871Z",
       "skills": {
         "10x-idea-check": {
           "files": [
@@ -188,18 +188,17 @@
       },
       "prompts": [],
       "configs": [],
-      "catalogContentHash": "7058bc8b8a71e5e6e28078422f73fe8de6da44696a0078f32894230a9727b19a",
       "representation": {
         "lang": "en",
         "tool": "claude-code",
-        "courseRules": true,
-        "rules": true
+        "courseRules": false,
+        "rules": false
       },
-      "installedReleaseId": "r-01931641e2446d2c391ae2a5580585d7b137173dca2b63b9a85ed32388155a66",
-      "installedManifestHash": "1ec3800cfa5c5d37754debba7e9172f32e71330ee1a29531d6ec8fff1c4bfaaa"
+      "installedReleaseId": "r-dd5c2b4bc3f63fee918d09330c676f31479453b6f6754ca1c13902646d33baca",
+      "installedManifestHash": "f22f7bf334f0e79bf8b7f095943940825d772c1c39d3613ae7d8531f4803c37f"
     },
     "m1l2": {
-      "appliedAt": "2026-09-22T08:56:18.761Z",
+      "appliedAt": "2026-09-24T08:18:22.215Z",
       "skills": {
         "10x-idea-check": {
           "files": [
@@ -256,14 +255,14 @@
       "representation": {
         "lang": "en",
         "tool": "claude-code",
-        "courseRules": true,
-        "rules": true
+        "courseRules": false,
+        "rules": false
       },
       "installedReleaseId": "r-dd5c2b4bc3f63fee918d09330c676f31479453b6f6754ca1c13902646d33baca",
       "installedManifestHash": "f22f7bf334f0e79bf8b7f095943940825d772c1c39d3613ae7d8531f4803c37f"
     },
     "m1l3": {
-      "appliedAt": "2026-09-22T11:35:20.046Z",
+      "appliedAt": "2026-09-24T08:18:28.300Z",
       "skills": {
         "10x-idea-check": {
           "files": [
@@ -338,14 +337,14 @@
       "representation": {
         "lang": "en",
         "tool": "claude-code",
-        "courseRules": true,
-        "rules": true
+        "courseRules": false,
+        "rules": false
       },
       "installedReleaseId": "r-dd5c2b4bc3f63fee918d09330c676f31479453b6f6754ca1c13902646d33baca",
       "installedManifestHash": "f22f7bf334f0e79bf8b7f095943940825d772c1c39d3613ae7d8531f4803c37f"
     },
     "m1l4": {
-      "appliedAt": "2026-09-24T07:30:12.177Z",
+      "appliedAt": "2026-09-24T08:17:57.642Z",
       "skills": {
         "10x-idea-check": {
           "files": [
@@ -431,13 +430,15 @@
       "prompts": [
         "skill-explainer.md"
       ],
-      "configs": []
+      "configs": [],
+      "representation": {
+        "lang": "en",
+        "tool": "claude-code",
+        "courseRules": false,
+        "rules": false
+      },
+      "installedReleaseId": "r-dd5c2b4bc3f63fee918d09330c676f31479453b6f6754ca1c13902646d33baca",
+      "installedManifestHash": "f22f7bf334f0e79bf8b7f095943940825d772c1c39d3613ae7d8531f4803c37f"
     }
-  },
-  "managedRules": {
-    "path": "CLAUDE.md",
-    "begin": "<!-- BEGIN @przeprogramowani/10x-cli -->",
-    "end": "<!-- END @przeprogramowani/10x-cli -->",
-    "upstreamHash": "9c611141144fb3f53d5ba2bff0a858c9810c5e41ef16bbbb4c5aa74a21d20b69"
   }
 }
