@@ -49,7 +49,7 @@ The only executable check is `npm run smoke` (`scripts/smoke.mjs`) — a live-HT
 - ESLint runs `strictTypeChecked` + `stylisticTypeChecked`: expect floating-promise, unsafe-`any` and unnecessary-condition errors. Prefix intentionally unused identifiers with `_`.
 - `wrangler.jsonc` is JSONC with trailing commas — a strict JSON parser will choke on it.
 - `.claude/skills/10x-*` is managed by `@przeprogramowani/10x-cli` (hashes in `.claude/.10x-cli-manifest.json`). Hand-editing one conflicts on the next sync.
-- `scripts/smoke.mjs` (and the CI `smoke` job) creates its test user through `/api/auth/signup`, and every later step signs in as that user. Removing signup to satisfy the domain rules breaks CI — rewrite the script in the same change to sign in with a pre-created shared account (none are seeded yet).
+- `scripts/smoke.mjs` (and the CI `smoke` job) signs in as the seeded operator from `supabase/seed.sql` (overridable via `SMOKE_EMAIL` / `SMOKE_PASSWORD`). A seed change must keep those credentials in sync with the defaults in `scripts/smoke.mjs`, or CI breaks.
 - Deploy is manual: `npm run build`, then `npx wrangler deploy`; secrets via `npx wrangler secret put`. No deploy workflow exists.
 - Known mismatches, deliberately unfixed: `context/foundation/tech-stack.md` says `cloudflare-pages` but `wrangler.jsonc` targets Cloudflare **Workers**; `CLAUDE.md.scaffold` tells you to validate with zod (not a dependency) and to export `prerender = false` (unnecessary under `output: "server"`, and no route does it).
 
