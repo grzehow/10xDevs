@@ -13,3 +13,4 @@ archived_at: null
 
 - 2026-09-29: Local Supabase is unavailable (no Docker), so verification runs against the cloud project. The operator and admin users were created there by the admin API, with generated passwords that aren't in the repo. Check 1.1 (`db reset`) was replaced by that.
 - 2026-09-29: Check 2.2 (smoke still passes) is deferred to 3.3. After Phase 2, the user that smoke signs up has no role, so it's treated as signed out. Phase 3 rewrites smoke to sign in as the operator.
+- 2026-09-29: CI smoke on PR #8 failed with "Email logins are disabled". In the Supabase CLI, `[auth.email] enable_signup = false` turns off the email provider entirely, not just email signup. Reverted it to `true`. Signup stays blocked by `[auth] enable_signup = false`, and the smoke 404 step still covers the app route.
