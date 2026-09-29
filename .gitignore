@@ -26,3 +26,10 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# other
+pwds.txt
+.kiro/
+.claude/
+*.bak
+.mcp.json
