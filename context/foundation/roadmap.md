@@ -102,7 +102,7 @@ Fundamenty poniżej zakładają, że to istnieje, i **nie** budują tego ponowni
 
 ### F-02: Wagi reguły trwałe, z RLS pod rozdział kont
 
-- **Outcome:** (foundation) wagi krytyczności i mnożniki dla klientów i usług są zapisane w bazie z wartościami startowymi z PRD, czytane przez aplikację przy liczeniu wyniku, a polityki RLS trzymają je poza zasięgiem konta operatorskiego.
+- **Outcome:** (foundation) wagi krytyczności i mnożniki dla klientów i usług są zapisane w bazie z wartościami startowymi z PRD, czytane przez aplikację przy liczeniu wyniku, a polityki RLS pozwalają kontu operatorskiemu tylko je czytać (do liczenia wyniku), a zmieniać — wyłącznie kontu administracyjnemu.
 - **Change ID:** persisted-weights
 - **PRD refs:** FR-009, `## Business Logic` (tabela wag startowych), NFR odtwarzalności rankingu, `## Access Control`
 - **Unlocks:** S-01 (liczenie wyniku czyta aktualne wagi, nie stałe w kodzie), S-04 (ekran administratora czyta i zapisuje te wiersze); redukuje ryzyko, że odtwarzalność rankingu zostanie doklejona po fakcie.

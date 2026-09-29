@@ -127,7 +127,7 @@ korekty.
 
 - Zapisana waga obowiązuje także po ponownym uruchomieniu aplikacji
 - Historia zmian pokazuje, co zostało zmienione i kiedy; nie wskazuje osoby, tylko konto
-- Konto operatorskie nie ma dostępu do wag ani do historii ich zmian
+- Konto operatorskie nie zmienia wag i nie widzi ekranu wag ani historii ich zmian
 
 ## Functional Requirements
 
@@ -267,8 +267,8 @@ zespołu i edytowalne z jednego konta administracyjnego.
 Dwa wspólne konta, bez kont osobowych:
 
 - **Konto operatorskie** — jedno wejście dla całego NOC. Wgrywa plik CSV i czyta
-  wyliczoną, posortowaną listę. Nie wykonuje operacji na zgłoszeniach i nie ma dostępu
-  do wag.
+  wyliczoną, posortowaną listę. Nie wykonuje operacji na zgłoszeniach, nie widzi ekranu
+  wag i ich nie zmienia.
 - **Konto administracyjne** — dodatkowo widzi i zmienia wagi krytyczności oraz mnożniki
   dla liczby usług i liczby klientów, a także historię zmian wag.
 
@@ -276,7 +276,8 @@ Dwa wspólne konta, bez kont osobowych:
 | ------------------------------------------------ | ------------------ | --------------------- |
 | Wgranie pliku CSV                                | tak                | tak                   |
 | Odczyt uszeregowanej listy i rozwinięcie pozycji | tak                | tak                   |
-| Odczyt obowiązujących wag                        | nie                | tak                   |
+| Podgląd wag (ekran wag)                          | nie                | tak                   |
+| Użycie wag do liczenia wyniku                    | tak                | tak                   |
 | Zmiana wagi                                      | nie                | tak                   |
 | Odczyt historii zmian wag                        | nie                | tak                   |
 | Operacje na zgłoszeniach                         | nie                | nie                   |
