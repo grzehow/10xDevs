@@ -30,6 +30,8 @@ pnpm-debug.log*
 # other
 pwds.txt
 .kiro/
-.claude/
+.claude/settings.local.json
+.claude/prompts/
+.claude/skills/
 *.bak
 .mcp.json

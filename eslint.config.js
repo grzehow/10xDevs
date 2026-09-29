@@ -1,6 +1,6 @@
 import { fixupPluginRules } from "@eslint/compat";
 import eslint from "@eslint/js";
-import { defineConfig, includeIgnoreFile } from "eslint/config";
+import { defineConfig, globalIgnores, includeIgnoreFile } from "eslint/config";
 import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
 import eslintPluginAstro from "eslint-plugin-astro";
 import pluginReact from "eslint-plugin-react";
@@ -79,6 +79,8 @@ const scriptsConfig = defineConfig({
 
 export default defineConfig(
   includeIgnoreFile(gitignorePath),
+  // Agent skill scripts (managed by 10x-cli) are not part of the app's TS project.
+  globalIgnores([".claude/", ".kiro/"]),
   baseConfig,
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],
