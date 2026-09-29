@@ -3,7 +3,7 @@ project: "NOC Priority"
 version: 1
 status: draft
 created: 2026-09-28
-updated: 2026-09-28
+updated: 2026-09-29
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -51,15 +51,15 @@ składniki, z których powstał. Bez tego wróci do ręcznej analizy.
 
 ## At a glance
 
-| ID   | Change ID                 | Outcome (user can …)                                                  | Prerequisites | PRD refs                       | Status   |
-| ---- | ------------------------- | --------------------------------------------------------------------- | ------------- | ------------------------------ | -------- |
-| F-01 | shared-accounts-and-roles | (foundation) dwa wspólne konta z rozdziałem rol, bez rejestracji      | —             | FR-001, FR-007, Access Control | ready    |
-| F-02 | persisted-weights         | (foundation) wagi reguły żyją trwale w bazie, z RLS pod rozdział kont | F-01          | FR-009, NFR odtwarzalność      | proposed |
-| S-01 | csv-upload-ranked-list    | wgrać CSV i zobaczyć listę uszeregowaną malejąco po priorytecie       | F-01, F-02    | US-01, FR-002, FR-003, FR-004  | proposed |
-| S-02 | score-breakdown           | rozwinąć pozycję i zobaczyć trzy składniki jej wyniku                 | S-01          | US-01, FR-005                  | proposed |
-| S-03 | csv-error-messages        | dostać czytelny komunikat przy niepoprawnym pliku i wgrać poprawiony  | S-01          | US-02, FR-006                  | proposed |
-| S-04 | weights-admin             | zobaczyć obowiązujące wagi i zmienić je tak, że obowiązują trwale     | F-02          | US-03, FR-008, FR-009          | proposed |
-| S-05 | weight-change-history     | zobaczyć historię zmian wag — co i kiedy zmieniono                    | S-04          | US-03, FR-010                  | proposed |
+| ID   | Change ID                 | Outcome (user can …)                                                  | Prerequisites | PRD refs                       | Status      |
+| ---- | ------------------------- | --------------------------------------------------------------------- | ------------- | ------------------------------ | ----------- |
+| F-01 | shared-accounts-and-roles | (foundation) dwa wspólne konta z rozdziałem rol, bez rejestracji      | —             | FR-001, FR-007, Access Control | in-progress |
+| F-02 | persisted-weights         | (foundation) wagi reguły żyją trwale w bazie, z RLS pod rozdział kont | F-01          | FR-009, NFR odtwarzalność      | proposed    |
+| S-01 | csv-upload-ranked-list    | wgrać CSV i zobaczyć listę uszeregowaną malejąco po priorytecie       | F-01, F-02    | US-01, FR-002, FR-003, FR-004  | proposed    |
+| S-02 | score-breakdown           | rozwinąć pozycję i zobaczyć trzy składniki jej wyniku                 | S-01          | US-01, FR-005                  | proposed    |
+| S-03 | csv-error-messages        | dostać czytelny komunikat przy niepoprawnym pliku i wgrać poprawiony  | S-01          | US-02, FR-006                  | proposed    |
+| S-04 | weights-admin             | zobaczyć obowiązujące wagi i zmienić je tak, że obowiązują trwale     | F-02          | US-03, FR-008, FR-009          | proposed    |
+| S-05 | weight-change-history     | zobaczyć historię zmian wag — co i kiedy zmieniono                    | S-04          | US-03, FR-010                  | proposed    |
 
 ## Streams
 
@@ -96,10 +96,9 @@ Fundamenty poniżej zakładają, że to istnieje, i **nie** budują tego ponowni
 - **Prerequisites:** —
 - **Parallel with:** —
 - **Blockers:** —
-- **Unknowns:**
-  - Skąd CI bierze dane wspólnych kont — zasiew w lokalnym Supabase plus sekrety w GitHub Actions? — Owner: user. Block: no.
+- **Unknowns:** — (rozstrzygnięte: CI zasiewa oba konta z `supabase/seed.sql` w lokalnym Supabase, bez sekretów w GitHub Actions; w projekcie chmurowym konta założono ręcznie, a smoke dostaje hasło przez `SMOKE_EMAIL` / `SMOKE_PASSWORD`).
 - **Risk:** `scripts/smoke.mjs` i zadanie `smoke` w CI zakładają dziś `/api/auth/signup`; usunięcie rejestracji bez przepisania skryptu w tej samej zmianie wywala CI. Idzie pierwsze, bo bez rozdziału rol nie da się zweryfikować ani jednego wymagania dostępowego.
-- **Status:** ready
+- **Status:** in-progress (zaimplementowane w PR #8, CI `ci` i `smoke` zielone; czeka na merge i `/10x-archive`)
 
 ### F-02: Wagi reguły trwałe, z RLS pod rozdział kont
 
@@ -180,15 +179,15 @@ Fundamenty poniżej zakładają, że to istnieje, i **nie** budują tego ponowni
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                 | Suggested issue title                                    | Ready for `/10x-plan` | Notes                                         |
-| ---------- | ------------------------- | -------------------------------------------------------- | --------------------- | --------------------------------------------- |
-| F-01       | shared-accounts-and-roles | Dwa wspólne konta, usunięcie rejestracji, rola w żądaniu | yes                   | Uruchom `/10x-plan shared-accounts-and-roles` |
-| F-02       | persisted-weights         | Trwałe wagi reguły priorytetu z politykami RLS           | no                    | Czeka na F-01                                 |
-| S-01       | csv-upload-ranked-list    | Wgranie CSV i lista uszeregowana po priorytecie          | no                    | Gwiazda przewodnia; czeka na F-01, F-02       |
-| S-02       | score-breakdown           | Rozbicie wyniku po rozwinięciu pozycji                   | no                    | Czeka na S-01                                 |
-| S-03       | csv-error-messages        | Czytelne komunikaty dla niepoprawnego pliku CSV          | no                    | Czeka na S-01                                 |
-| S-04       | weights-admin             | Podgląd i edycja wag z konta administracyjnego           | no                    | Czeka na F-02; może iść równolegle do S-01    |
-| S-05       | weight-change-history     | Historia zmian wag                                       | no                    | Czeka na S-04                                 |
+| Roadmap ID | Change ID                 | Suggested issue title                                    | Ready for `/10x-plan` | Notes                                           |
+| ---------- | ------------------------- | -------------------------------------------------------- | --------------------- | ----------------------------------------------- |
+| F-01       | shared-accounts-and-roles | Dwa wspólne konta, usunięcie rejestracji, rola w żądaniu | done                  | #1 · Zaimplementowane w PR #8; czeka na merge   |
+| F-02       | persisted-weights         | Trwałe wagi reguły priorytetu z politykami RLS           | no                    | #2 · Czeka na merge F-01 (PR #8)                |
+| S-01       | csv-upload-ranked-list    | Wgranie CSV i lista uszeregowana po priorytecie          | no                    | #3 · Gwiazda przewodnia; czeka na F-01, F-02    |
+| S-02       | score-breakdown           | Rozbicie wyniku po rozwinięciu pozycji                   | no                    | #4 · Czeka na S-01                              |
+| S-03       | csv-error-messages        | Czytelne komunikaty dla niepoprawnego pliku CSV          | no                    | #5 · Czeka na S-01                              |
+| S-04       | weights-admin             | Podgląd i edycja wag z konta administracyjnego           | no                    | #6 · Czeka na F-02; może iść równolegle do S-01 |
+| S-05       | weight-change-history     | Historia zmian wag                                       | no                    | #7 · Czeka na S-04                              |
 
 ## Open Roadmap Questions
 
