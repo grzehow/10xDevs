@@ -1,7 +1,7 @@
 ---
 change_id: shared-accounts-and-roles
 title: Shared accounts and roles
-status: implementing
+status: implemented
 created: 2026-09-29
 updated: 2026-09-29
 archived_at: null

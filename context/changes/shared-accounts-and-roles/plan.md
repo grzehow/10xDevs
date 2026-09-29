@@ -285,7 +285,7 @@ Existing local stacks need `npx supabase db reset` to pick up the seed (drops lo
 - [x] 3.1 `npx astro sync && npm run lint && npx astro check && npm run build` passes — cd714e9
 - [x] 3.2 No obsolete signup implementation or UI references remain: `grep -rn "signup\|SignUp\|confirm-email" src` returns nothing; `scripts/smoke.mjs` retains only the expected `POST /api/auth/signup` 404 assertion — cd714e9
 - [x] 3.3 `npx supabase db reset` and `npm run build` complete; with `npm run preview -- --port 4321` running in a separate terminal, `BASE_URL=http://localhost:4321 npm run smoke` passes — cd714e9
-- [ ] 3.4 CI `ci` and `smoke` jobs pass on the PR
+- [x] 3.4 CI `ci` and `smoke` jobs pass on the PR — f1349e0
 
 #### Manual
 
