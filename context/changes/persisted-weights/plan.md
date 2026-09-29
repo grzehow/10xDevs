@@ -216,25 +216,25 @@ Make the written rules match the enforced boundary. The operator can read the we
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly on a fresh DB: `npx supabase db reset`
-- [ ] 1.2 `psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -c "select count(*) from public.scoring_weights"` returns 6 after reset
-- [x] 1.3 `npx astro sync && npm run lint && npx astro check && npm run build` passes
+- [x] 1.1 Migration applies cleanly on a fresh DB: `npx supabase db reset` — 2d9173b
+- [x] 1.2 `psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -c "select count(*) from public.scoring_weights"` returns 6 after reset — 2d9173b
+- [x] 1.3 `npx astro sync && npm run lint && npx astro check && npm run build` passes — 2d9173b
 
 #### Manual
 
-- [ ] 1.4 In Supabase Studio, the table shows RLS enabled with exactly two policies (select for operator+admin, update for admin)
+- [x] 1.4 In Supabase Studio, the table shows RLS enabled with exactly two policies (select for operator+admin, update for admin) — 2d9173b
 
 ### Phase 2: RLS tests in CI
 
 #### Automated
 
-- [ ] 2.1 `npx supabase test db` passes locally, with all assertions green
-- [ ] 2.2 Temporarily adding an operator UPDATE policy makes the test fail (revert afterwards)
-- [ ] 2.3 CI `smoke` job passes on the PR, including the new step
+- [x] 2.1 `npx supabase test db` passes locally, with all assertions green — d745e34
+- [x] 2.2 Temporarily adding an operator UPDATE policy makes the test fail (revert afterwards) — d745e34
+- [x] 2.3 CI `smoke` job passes on the PR, including the new step — d745e34
 
 #### Manual
 
-- [ ] 2.4 The CI log shows the `supabase test db` output with the expected assertion count
+- [x] 2.4 The CI log shows the `supabase test db` output with the expected assertion count — d745e34
 
 ### Phase 3: Reword the operator rule
 
