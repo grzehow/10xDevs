@@ -240,9 +240,9 @@ Make the written rules match the enforced boundary. The operator can read the we
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes
-- [ ] 3.2 A grep for "cannot read or change weights" in `AGENTS.md` and for "nie ma dostępu do wag" in `context/foundation/prd.md` returns nothing
+- [x] 3.1 `npm run lint` passes — 044c26a
+- [x] 3.2 A grep for "cannot read or change weights" in `AGENTS.md` and for "nie ma dostępu do wag" in `context/foundation/prd.md` returns nothing — 044c26a
 
 #### Manual
 
-- [ ] 3.3 AGENTS.md, the PRD and the roadmap state the same operator boundary, and it matches the migration's policies
+- [x] 3.3 AGENTS.md, the PRD and the roadmap state the same operator boundary, and it matches the migration's policies — 044c26a

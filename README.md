@@ -128,6 +128,14 @@ SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_KEY=<anon-key>
 ```
 
+A cloud project only runs migrations, not `seed.sql`. Link it and apply the migrations (this creates the scoring weights with their defaults):
+
+```bash
+npx supabase login
+npx supabase link --project-ref <project-ref>
+npx supabase db push
+```
+
 ### Email confirmation (cloud projects)
 
 The local stack already has email confirmation off (`supabase/config.toml`). A cloud project requires it by default; to turn it off:
