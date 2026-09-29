@@ -29,3 +29,7 @@ pnpm-debug.log*
 
 # other
 pwds.txt
+.kiro/
+.claude/
+*.bak
+.mcp.json

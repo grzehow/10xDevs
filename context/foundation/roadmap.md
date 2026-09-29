@@ -54,7 +54,7 @@ składniki, z których powstał. Bez tego wróci do ręcznej analizy.
 | ID   | Change ID                 | Outcome (user can …)                                                  | Prerequisites | PRD refs                       | Status      |
 | ---- | ------------------------- | --------------------------------------------------------------------- | ------------- | ------------------------------ | ----------- |
 | F-01 | shared-accounts-and-roles | (foundation) dwa wspólne konta z rozdziałem rol, bez rejestracji      | —             | FR-001, FR-007, Access Control | in-progress |
-| F-02 | persisted-weights         | (foundation) wagi reguły żyją trwale w bazie, z RLS pod rozdział kont | F-01          | FR-009, NFR odtwarzalność      | proposed    |
+| F-02 | persisted-weights         | (foundation) wagi reguły żyją trwale w bazie, z RLS pod rozdział kont | F-01          | FR-009, NFR odtwarzalność      | in-progress |
 | S-01 | csv-upload-ranked-list    | wgrać CSV i zobaczyć listę uszeregowaną malejąco po priorytecie       | F-01, F-02    | US-01, FR-002, FR-003, FR-004  | proposed    |
 | S-02 | score-breakdown           | rozwinąć pozycję i zobaczyć trzy składniki jej wyniku                 | S-01          | US-01, FR-005                  | proposed    |
 | S-03 | csv-error-messages        | dostać czytelny komunikat przy niepoprawnym pliku i wgrać poprawiony  | S-01          | US-02, FR-006                  | proposed    |
@@ -111,7 +111,7 @@ Fundamenty poniżej zakładają, że to istnieje, i **nie** budują tego ponowni
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Zakres trzymany na jednej tabeli wag z zasianymi wartościami — historia zmian wchodzi dopiero z S-04, które jej potrzebuje. Gdyby wagi zostały stałymi w kodzie na czas S-01, FR-009 wymagałoby później przepisania liczenia wyniku.
-- **Status:** proposed
+- **Status:** in-progress
 
 ## Slices
 
