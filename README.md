@@ -112,7 +112,7 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-The starter uses only Supabase Auth's built-in `auth.users` table. The NOC Priority app adds migrations in `supabase/migrations/` for weights, weight-change history and the two shared accounts — see `CLAUDE.md`.
+The starter uses only Supabase Auth's built-in `auth.users` table. The NOC Priority app adds migrations in `supabase/migrations/` for weights and weight-change history; the two shared accounts come from `supabase/seed.sql` — see `CLAUDE.md`.
 
 ### Using a cloud Supabase project instead
 
@@ -136,18 +136,36 @@ The local stack already has email confirmation off (`supabase/config.toml`). A c
 2. Go to **Authentication → Email → Confirm email**
 3. Toggle it **off**
 
-Users can then sign in immediately after sign-up without clicking a confirmation link.
+### Shared accounts
+
+There is no signup flow. The app uses two shared accounts, told apart by `app_metadata.role`; a user without a role is treated as signed out.
+
+**Local:** `supabase/seed.sql` creates both (dev-only passwords, never reuse them in a hosted project):
+
+| Account  | Email                | Password                 |
+| -------- | -------------------- | ------------------------ |
+| Operator | `operator@noc.local` | `Operator-Dev-Passw0rd!` |
+| Admin    | `admin@noc.local`    | `Admin-Dev-Passw0rd!`    |
+
+The seed runs only on a fresh stack or on reset — on an already running local stack, run `npx supabase db reset`.
+
+**Cloud:**
+
+1. In the Supabase dashboard go to **Authentication → Users → Add user** and create both users with **Auto Confirm User** checked.
+2. Disable signups: **Authentication → Sign In / Providers → Allow new users to sign up** off.
+3. Assign the roles in the SQL editor:
+
+```sql
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}' where email = '<admin email>';
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"operator"}' where email = '<operator email>';
+```
 
 ### Auth routes
 
-These are the starter's routes. The NOC Priority app uses two shared accounts (operator, admin) with no signup flow, so `/auth/signup` and `/auth/confirm-email` are due to be removed.
-
-| Route                 | Description                                                             |
-| --------------------- | ----------------------------------------------------------------------- |
-| `/auth/signin`        | Email/password sign-in form                                             |
-| `/auth/signup`        | Email/password sign-up form                                             |
-| `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
-| `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
+| Route          | Description                                                             |
+| -------------- | ----------------------------------------------------------------------- |
+| `/auth/signin` | Email/password sign-in form                                             |
+| `/dashboard`   | Example protected page (redirects to `/auth/signin` if unauthenticated) |
 
 Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
 
@@ -171,14 +189,18 @@ Set `SUPABASE_URL` and `SUPABASE_KEY` as secrets in your Cloudflare dashboard or
 
 ## Smoke test
 
-`scripts/smoke.mjs` is a dependency-free Node script that walks the whole auth flow (sign-up, sign-in, protected page, sign-out) over HTTP. Run it against the dev server or the production preview after dependency upgrades:
+`scripts/smoke.mjs` is a dependency-free Node script that walks the whole auth flow (signup endpoint gone, sign-in as the seeded operator, protected page, sign-out) over HTTP. Run it against the dev server or the production preview after dependency upgrades:
 
 ```bash
 npm run dev            # or: npm run build && npm run preview
 BASE_URL=http://localhost:4321 npm run smoke
 ```
 
-It needs a reachable Supabase instance (local or cloud) with email confirmation disabled.
+It needs a reachable Supabase instance (local or cloud). It defaults to the seeded operator from `supabase/seed.sql`; against a cloud project pass that project's operator credentials:
+
+```bash
+SMOKE_EMAIL=<operator email> SMOKE_PASSWORD=<operator password> npm run smoke
+```
 
 > **Note:** this script exists primarily to guard the development of the starter itself — it is a fast sanity check that dependency upgrades did not break the build, the Cloudflare adapter or the Supabase auth flow. It is **not** a substitute for a real test suite. Once you build your own product on top of this starter, add proper tests (unit, integration, end-to-end) suited to your application.
 

@@ -2,8 +2,9 @@
 // Zero dependencies on purpose. Run against a live server: BASE_URL=http://localhost:4321 node scripts/smoke.mjs
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
-const email = `smoke-${Date.now()}@example.com`;
-const password = "Smoke-Test-Passw0rd!";
+// Seeded operator from supabase/seed.sql; override both for a cloud project.
+const email = process.env.SMOKE_EMAIL ?? "operator@noc.local";
+const password = process.env.SMOKE_PASSWORD ?? "Operator-Dev-Passw0rd!";
 const jar = new Map();
 
 function cookieHeader() {
@@ -39,9 +40,9 @@ const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   [
-    "signup creates account",
+    "signup endpoint is gone",
     () => request("/api/auth/signup", { method: "POST", form: { email, password } }),
-    { status: 302, location: "/auth/confirm-email" },
+    { status: 404 },
   ],
   [
     "signin rejects wrong password",

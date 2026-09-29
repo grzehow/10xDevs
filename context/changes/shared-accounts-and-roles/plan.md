@@ -270,25 +270,25 @@ Existing local stacks need `npx supabase db reset` to pick up the seed (drops lo
 
 #### Automated
 
-- [x] 2.1 `npx astro sync && npm run lint && npx astro check && npm run build` passes
-- [ ] 2.2 `npm run smoke` still passes (signup still exists in this phase)
+- [x] 2.1 `npx astro sync && npm run lint && npx astro check && npm run build` passes — b706245
+- [x] 2.2 `npm run smoke` still passes (signup still exists in this phase)
 
 #### Manual
 
-- [x] 2.3 Dashboard shows "Konto operatorskie" for the operator and "Konto administracyjne" for the admin
-- [x] 2.4 A user created in Studio without a role signs in but is redirected from `/dashboard` to `/auth/signin`
+- [x] 2.3 Dashboard shows "Konto operatorskie" for the operator and "Konto administracyjne" for the admin — b706245
+- [x] 2.4 A user created in Studio without a role signs in but is redirected from `/dashboard` to `/auth/signin` — b706245
 
 ### Phase 3: Remove signup, rewrite smoke, Polish copy
 
 #### Automated
 
-- [ ] 3.1 `npx astro sync && npm run lint && npx astro check && npm run build` passes
-- [ ] 3.2 No obsolete signup implementation or UI references remain: `grep -rn "signup\|SignUp\|confirm-email" src` returns nothing; `scripts/smoke.mjs` retains only the expected `POST /api/auth/signup` 404 assertion
-- [ ] 3.3 `npx supabase db reset` and `npm run build` complete; with `npm run preview -- --port 4321` running in a separate terminal, `BASE_URL=http://localhost:4321 npm run smoke` passes
+- [x] 3.1 `npx astro sync && npm run lint && npx astro check && npm run build` passes
+- [x] 3.2 No obsolete signup implementation or UI references remain: `grep -rn "signup\|SignUp\|confirm-email" src` returns nothing; `scripts/smoke.mjs` retains only the expected `POST /api/auth/signup` 404 assertion
+- [x] 3.3 `npx supabase db reset` and `npm run build` complete; with `npm run preview -- --port 4321` running in a separate terminal, `BASE_URL=http://localhost:4321 npm run smoke` passes
 - [ ] 3.4 CI `ci` and `smoke` jobs pass on the PR
 
 #### Manual
 
-- [ ] 3.5 Sign-in page, form validation, Topbar and dashboard read in Polish with no signup link anywhere
-- [ ] 3.6 `/auth/signup` shows the 404 page
-- [ ] 3.7 Signing in as admin and operator both work; signing out returns to signed-out state
+- [x] 3.5 Sign-in page, form validation, Topbar and dashboard read in Polish with no signup link anywhere
+- [x] 3.6 `/auth/signup` shows the 404 page
+- [x] 3.7 Signing in as admin and operator both work; signing out returns to signed-out state
