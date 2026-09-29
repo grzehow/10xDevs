@@ -259,24 +259,24 @@ Existing local stacks need `npx supabase db reset` to pick up the seed (drops lo
 
 #### Automated
 
-- [x] 1.1 `npx supabase db reset` completes without errors
-- [x] 1.2 `npx astro sync && npm run lint && npx astro check && npm run build` passes
+- [x] 1.1 `npx supabase db reset` completes without errors — 1c01673
+- [x] 1.2 `npx astro sync && npm run lint && npx astro check && npm run build` passes — 1c01673
 
 #### Manual
 
-- [x] 1.3 Signing in at `/auth/signin` as `operator@noc.local` and as `admin@noc.local` both succeed (redirect to `/`) and `/dashboard` then renders
+- [x] 1.3 Signing in at `/auth/signin` as `operator@noc.local` and as `admin@noc.local` both succeed (redirect to `/`) and `/dashboard` then renders — 1c01673
 
 ### Phase 2: Role on the request
 
 #### Automated
 
-- [ ] 2.1 `npx astro sync && npm run lint && npx astro check && npm run build` passes
+- [x] 2.1 `npx astro sync && npm run lint && npx astro check && npm run build` passes
 - [ ] 2.2 `npm run smoke` still passes (signup still exists in this phase)
 
 #### Manual
 
-- [ ] 2.3 Dashboard shows "Konto operatorskie" for the operator and "Konto administracyjne" for the admin
-- [ ] 2.4 A user created in Studio without a role signs in but is redirected from `/dashboard` to `/auth/signin`
+- [x] 2.3 Dashboard shows "Konto operatorskie" for the operator and "Konto administracyjne" for the admin
+- [x] 2.4 A user created in Studio without a role signs in but is redirected from `/dashboard` to `/auth/signin`
 
 ### Phase 3: Remove signup, rewrite smoke, Polish copy
 
