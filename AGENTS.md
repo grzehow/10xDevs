@@ -22,7 +22,7 @@ The only executable check is `npm run smoke` (`scripts/smoke.mjs`) — a live-HT
 
 ## Domain rules (NOC Priority)
 
-- Scoring is fixed: `score = severity_weight + 3.0 * customers + 1.0 * services`, with weights `warning 1.0 / minor 5.0 / major 10.0 / critical 15.0`, ties broken by higher severity (`major, 2 customers, 5 services = 21.0`). A repeated upload with unchanged weights must produce byte-identical ordering.
+- The scoring formula is fixed: `score = severity_weight + customer_weight * customers + service_weight * services`. The six weights are editable rows in `public.scoring_weights`; S-01 reads them from the DB, never from constants. Defaults: `warning 1.0 / minor 5.0 / major 10.0 / critical 15.0`, `customer 3.0`, `service 1.0`. Ties are broken by higher severity (`major, 2 customers, 5 services = 21.0`). A repeated upload with unchanged weights must produce byte-identical ordering.
 - CSV columns, in this exact order: `ticket_id, severity, number_of_customers, number_of_services`. **Customers comes before services** — transposing them is easy and silently changes every score.
 - Uploaded tickets are never persisted. Only weights, weight-change history, and the two accounts live in the database. No upload history.
 - Two shared accounts (operator, admin) — no signup flow, no per-person accounts. The operator may SELECT `scoring_weights` (for scoring; the score components reveal the values anyway) but cannot change weights and has no weights or history screen; RLS enforces the read/write split (only admin UPDATEs, nobody INSERTs or DELETEs). The six default weights live in `supabase/migrations/20260929120000_scoring_weights.sql`, not in code. Weight history records account + timestamp, never a person.

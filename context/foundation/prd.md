@@ -282,6 +282,8 @@ Dwa wspólne konta, bez kont osobowych:
 | Odczyt historii zmian wag                        | nie                | tak                   |
 | Operacje na zgłoszeniach                         | nie                | nie                   |
 
+Operator zna wartości wag pośrednio: rozwinięta pozycja pokazuje trzy składniki wyniku.
+
 Rozdział uprawnień działa, śladu personalnego nie ma: historia zmian wag wskazuje, że
 zmiany dokonano z konta administracyjnego i kiedy, ale nie wskazuje osoby. To
 zabezpieczenie zmiany, nie audyt personalny.
