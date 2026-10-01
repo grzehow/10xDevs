@@ -1,11 +1,11 @@
 ---
 name: verify
-description: Run the full local equivalent of this repo's CI (astro sync, lint, astro check, build) and report what failed. Pass "smoke" to also run the live auth-flow smoke check against a local Supabase. Use before claiming work is done, before committing, or when asked whether CI will pass.
+description: Run the full local equivalent of this repo's CI (astro sync, lint, test, astro check, build) and report what failed. Pass "smoke" to also run the live auth-flow smoke check against a local Supabase. Use before claiming work is done, before committing, or when asked whether CI will pass.
 ---
 
 # Verify
 
-This repo has no `typecheck` script and no `test` script, so `npm run lint` passing tells you nothing about whether CI passes. CI (`.github/workflows/ci.yml`) runs `astro sync` → `lint` → `astro check` → `build`. Reproduce it exactly.
+This repo has no `typecheck` script, so `npm run lint` passing tells you nothing about whether CI passes. CI (`.github/workflows/ci.yml`) runs `astro sync` → `lint` → `test` → `astro check` → `build`. Reproduce it exactly.
 
 ## Standard run (no Docker needed)
 
@@ -14,6 +14,7 @@ Run these in order, from the repo root, and stop at the first failure:
 ```
 npx astro sync
 npm run lint
+npm test
 npx astro check
 npm run build
 ```
@@ -26,7 +27,7 @@ Report the first failing step with its actual output. Do not summarize a failure
 
 ## With `smoke` ($ARGUMENTS contains "smoke")
 
-`scripts/smoke.mjs` drives the real auth flow over HTTP: 8 assertions from `home renders` through `dashboard redirects after signout`. It needs a running server and a reachable Supabase, and it has no filter argument — it is all-or-nothing.
+`scripts/smoke.mjs` drives the real auth flow over HTTP: 9 assertions from `home renders` through `dashboard redirects after signout`. It needs a running server and a reachable Supabase, and it has no filter argument — it is all-or-nothing.
 
 1. `npx supabase start` (Docker, ~7 GB RAM). If it is already running, skip.
 2. Write both env files. Cloudflare's workerd reads `.dev.vars`, not `.env`, and `npm run preview` runs on workerd — so `.env` alone silently yields an auth-disabled app:

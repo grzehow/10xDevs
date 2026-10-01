@@ -220,19 +220,19 @@ None. There's no schema change. The cloud project already needs F-02's migration
 
 #### Automated
 
-- [x] 1.1 `npm test` passes, including every case listed above
-- [x] 1.2 `npx astro sync && npm run lint && npx astro check && npm run build` passes
+- [x] 1.1 `npm test` passes, including every case listed above — d4976b8
+- [x] 1.2 `npx astro sync && npm run lint && npx astro check && npm run build` passes — d4976b8
 
 ### Phase 2: Upload and ranked list on `/dashboard`
 
 #### Automated
 
-- [ ] 2.1 `npx astro sync && npm run lint && npm test && npx astro check && npm run build` passes
+- [x] 2.1 `npx astro sync && npm run lint && npm test && npx astro check && npm run build` passes
 - [ ] 2.2 CI `ci` and `smoke` jobs pass on the PR, including the new upload step
 
 #### Manual
 
-- [ ] 2.3 Signed in as the operator against the cloud project, uploading a CSV with the PRD example row (`major,2,5`) shows score `21,0`, and the list is ordered by score, then severity, then `ticket_id`
-- [ ] 2.4 Uploading the same file twice gives an identical list
-- [ ] 2.5 A file with swapped count columns, a duplicate `ticket_id`, or a semicolon separator shows the Polish file error with no list, and uploading a correct file right after works without signing in again
-- [ ] 2.6 The list shows only rank, id and score; there are no ticket actions anywhere
+- [x] 2.3 Signed in as the operator against the cloud project, uploading a CSV with the PRD example row (`major,2,5`) shows score `21,0`, and the list is ordered by score, then severity, then `ticket_id`
+- [x] 2.4 Uploading the same file twice gives an identical list
+- [x] 2.5 A file with swapped count columns, a duplicate `ticket_id`, or a semicolon separator shows the Polish file error with no list, and uploading a correct file right after works without signing in again
+- [x] 2.6 The list shows only rank, id and score; there are no ticket actions anywhere

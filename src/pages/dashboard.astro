@@ -1,8 +1,40 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import { createClient } from "@/lib/supabase";
+import { MAX_BYTES, parseWeights, rankTickets, type RankedTicket } from "@/lib/ranking";
+
+// TODO(S-03): one generic message for every bad-file case. Give missing column, empty cell,
+// wrong separator, unknown severity, duplicate id and size limit their own message (needs rankTickets to return a reason).
+const FILE_ERROR =
+  "Nie udało się przetworzyć pliku. Sprawdź, czy ma nagłówek ticket_id,severity,number_of_customers,number_of_services i poprawne wartości.";
+const WEIGHTS_ERROR = "Nie udało się wczytać wag reguły. Spróbuj ponownie za chwilę.";
+
+const scoreFormat = new Intl.NumberFormat("pl-PL", { minimumFractionDigits: 1, maximumFractionDigits: 2 });
 
 const { role } = Astro.locals;
 const accountLabel = role === "admin" ? "Konto administracyjne" : "Konto operatorskie";
+
+async function rankUpload(): Promise<{ error: string } | { tickets: RankedTicket[] }> {
+  let file: FormDataEntryValue | null;
+  try {
+    file = (await Astro.request.formData()).get("file");
+  } catch {
+    return { error: FILE_ERROR };
+  }
+  if (!(file instanceof File) || file.size > MAX_BYTES) return { error: FILE_ERROR };
+
+  const supabase = createClient(Astro.request.headers, Astro.cookies);
+  const result = supabase ? await supabase.from("scoring_weights").select("key, value") : null;
+  const weights = result && !result.error ? parseWeights(result.data) : null;
+  if (!weights) return { error: WEIGHTS_ERROR };
+
+  const ranked = rankTickets(await file.text(), weights);
+  return ranked.ok ? { tickets: ranked.tickets } : { error: FILE_ERROR };
+}
+
+const outcome = Astro.request.method === "POST" ? await rankUpload() : null;
+const error = outcome && "error" in outcome ? outcome.error : null;
+const tickets = outcome && "tickets" in outcome ? outcome.tickets : null;
 ---
 
 <Layout title="Panel">
@@ -15,6 +47,34 @@ const accountLabel = role === "admin" ? "Konto administracyjne" : "Konto operato
         Zalogowano jako: <span class="font-semibold text-white">{accountLabel}</span>
       </p>
       <p class="mt-2 text-sm text-blue-100/50">Ta strona jest dostępna tylko dla zalogowanych użytkowników.</p>
+      <form method="POST" enctype="multipart/form-data" class="mt-6 flex flex-col items-center gap-3">
+        <label for="file" class="text-sm text-blue-100/80">
+          Wgraj plik CSV
+        </label>
+        <input id="file" type="file" name="file" accept=".csv,text/csv" required class="text-sm" />
+        <button
+          type="submit"
+          class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+        >
+          Uszereguj
+        </button>
+      </form>
+      {error && (
+        <p role="alert" class="mt-4 max-w-md text-sm text-red-200">
+          {error}
+        </p>
+      )}
+      {tickets && (
+        <ol class="mt-6 space-y-1 text-left text-sm">
+          {tickets.map((t) => (
+            <li data-ticket-id={t.ticketId} class="flex gap-4">
+              <span class="w-8 text-blue-100/60">{t.rank}.</span>
+              <span class="flex-1 font-mono">{t.ticketId}</span>
+              <span class="font-semibold">{scoreFormat.format(t.score)}</span>
+            </li>
+          ))}
+        </ol>
+      )}
       <form method="POST" action="/api/auth/signout" class="mt-6">
         <button
           type="submit"
