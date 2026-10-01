@@ -228,7 +228,7 @@ None. There's no schema change. The cloud project already needs F-02's migration
 #### Automated
 
 - [x] 2.1 `npx astro sync && npm run lint && npm test && npx astro check && npm run build` passes — 8787527
-- [ ] 2.2 CI `ci` and `smoke` jobs pass on the PR, including the new upload step
+- [x] 2.2 CI `ci` and `smoke` jobs pass on the PR, including the new upload step — 3906fa2
 
 #### Manual
 
