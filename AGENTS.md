@@ -4,15 +4,17 @@ Rules for any AI agent working in this repo.
 
 ## Verify before claiming done
 
-There is no `typecheck` and no `test` script. A clean `npm run lint` does **not** mean CI passes. Run, in order (or use `/verify`):
+There is no `typecheck` script. A clean `npm run lint` does **not** mean CI passes. Run, in order (or use `/verify`):
 
 ```
-npx astro sync && npm run lint && npx astro check && npm run build
+npx astro sync && npm run lint && npm test && npx astro check && npm run build
 ```
+
+`npm test` runs `node:test` over `src/**/*.test.ts` using Node's built-in type stripping (Node ≥ 22.18).
 
 `npx astro sync` is required after a fresh clone or dependency change: `.astro/types.d.ts` is generated and gitignored but sits in `tsconfig.include`, so `astro check` fails without it.
 
-The only executable check is `npm run smoke` (`scripts/smoke.mjs`) — a live-HTTP walk through the auth flow. It needs a running server and a reachable Supabase, and has no filter argument, so single-case runs are impossible. There is no unit test suite yet.
+The other executable check is `npm run smoke` (`scripts/smoke.mjs`) — a live-HTTP walk through the auth flow and a CSV upload. It needs a running server and a reachable Supabase, and has no filter argument, so single-case runs are impossible.
 
 ## Environment: two files, and silent degradation
 

@@ -3,7 +3,7 @@ project: "NOC Priority"
 version: 1
 status: draft
 created: 2026-09-28
-updated: 2026-09-29
+updated: 2026-09-30
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -55,7 +55,7 @@ składniki, z których powstał. Bez tego wróci do ręcznej analizy.
 | ---- | ------------------------- | --------------------------------------------------------------------- | ------------- | ------------------------------ | ----------- |
 | F-01 | shared-accounts-and-roles | (foundation) dwa wspólne konta z rozdziałem rol, bez rejestracji      | —             | FR-001, FR-007, Access Control | in-progress |
 | F-02 | persisted-weights         | (foundation) wagi reguły żyją trwale w bazie, z RLS pod rozdział kont | F-01          | FR-009, NFR odtwarzalność      | in-progress |
-| S-01 | csv-upload-ranked-list    | wgrać CSV i zobaczyć listę uszeregowaną malejąco po priorytecie       | F-01, F-02    | US-01, FR-002, FR-003, FR-004  | proposed    |
+| S-01 | csv-upload-ranked-list    | wgrać CSV i zobaczyć listę uszeregowaną malejąco po priorytecie       | F-01, F-02    | US-01, FR-002, FR-003, FR-004  | in-progress |
 | S-02 | score-breakdown           | rozwinąć pozycję i zobaczyć trzy składniki jej wyniku                 | S-01          | US-01, FR-005                  | proposed    |
 | S-03 | csv-error-messages        | dostać czytelny komunikat przy niepoprawnym pliku i wgrać poprawiony  | S-01          | US-02, FR-006                  | proposed    |
 | S-04 | weights-admin             | zobaczyć obowiązujące wagi i zmienić je tak, że obowiązują trwale     | F-02          | US-03, FR-008, FR-009          | proposed    |
@@ -125,7 +125,7 @@ Fundamenty poniżej zakładają, że to istnieje, i **nie** budują tego ponowni
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Kolumny w pliku idą w kolejności `ticket_id, severity, number_of_customers, number_of_services` — klienci **przed** usługami; przestawienie ich nie wywoła błędu, tylko po cichu zmieni każdy wynik. Remisy muszą rozstrzygać się wyższą krytycznością, inaczej wracamy do paraliżu decyzyjnego przy równych wynikach. Idzie pierwsze wśród slice'ów, bo jest gwiazdą przewodnią.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-02: Operator rozwija pozycję i widzi rozbicie wyniku
 

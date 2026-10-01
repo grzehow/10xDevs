@@ -21,7 +21,7 @@ function storeCookies(response) {
   }
 }
 
-async function request(path, { method = "GET", form } = {}) {
+async function request(path, { method = "GET", form, multipart } = {}) {
   const response = await fetch(BASE_URL + path, {
     method,
     redirect: "manual",
@@ -30,10 +30,16 @@ async function request(path, { method = "GET", form } = {}) {
       Origin: BASE_URL,
       ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
     },
-    body: form ? new URLSearchParams(form).toString() : undefined,
+    body: form ? new URLSearchParams(form).toString() : multipart,
   });
   storeCookies(response);
-  return { status: response.status, location: response.headers.get("location") ?? "" };
+  return { status: response.status, location: response.headers.get("location") ?? "", text: await response.text() };
+}
+
+function csvUpload(csv) {
+  const body = new FormData();
+  body.append("file", new Blob([csv], { type: "text/csv" }), "smoke.csv");
+  return body;
 }
 
 const steps = [
@@ -55,6 +61,24 @@ const steps = [
     { status: 302, location: "/" },
   ],
   ["dashboard renders for signed-in user", () => request("/dashboard"), { status: 200 }],
+  [
+    "dashboard ranks uploaded csv",
+    () =>
+      request("/dashboard", {
+        method: "POST",
+        multipart: csvUpload(
+          "ticket_id,severity,number_of_customers,number_of_services\nSMOKE-LOW,warning,0,0\nSMOKE-HIGH,critical,1,1\n",
+        ),
+      }),
+    {
+      status: 200,
+      bodyCheck: (text) => {
+        const high = text.indexOf('data-ticket-id="SMOKE-HIGH"');
+        // 15 + 3×1 + 1×1 = 19, rendered with the pl-PL formatter on the real runtime.
+        return high !== -1 && high < text.indexOf('data-ticket-id="SMOKE-LOW"') && text.includes("19,0");
+      },
+    },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
 ];
@@ -64,7 +88,8 @@ for (const [name, run, expected] of steps) {
   const actual = await run();
   const ok =
     actual.status === expected.status &&
-    (expected.location === undefined || actual.location.startsWith(expected.location));
+    (expected.location === undefined || actual.location.startsWith(expected.location)) &&
+    (expected.bodyCheck === undefined || expected.bodyCheck(actual.text));
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;
