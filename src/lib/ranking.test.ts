@@ -63,6 +63,7 @@ void describe("rankTickets", () => {
       csv("T1,minor,-1,0"),
       csv("T1,minor,1.5,0"),
       csv("T1,minor,,0"),
+      csv("T1,minor,1234567890,0"),
       csv("T1,minor,0"),
       csv("T1,minor,0,0,0"),
       "ticket_id;severity;number_of_customers;number_of_services\nT1;minor;0;0",

@@ -15,6 +15,9 @@ const { role } = Astro.locals;
 const accountLabel = role === "admin" ? "Konto administracyjne" : "Konto operatorskie";
 
 async function rankUpload(): Promise<{ error: string } | { tickets: RankedTicket[] }> {
+  // formData() buffers the whole body, so refuse oversized requests first (64 KiB covers multipart overhead).
+  if (Number(Astro.request.headers.get("content-length") ?? 0) > MAX_BYTES + 65_536) return { error: FILE_ERROR };
+
   let file: FormDataEntryValue | null;
   try {
     file = (await Astro.request.formData()).get("file");

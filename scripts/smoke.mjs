@@ -74,7 +74,8 @@ const steps = [
       status: 200,
       bodyCheck: (text) => {
         const high = text.indexOf('data-ticket-id="SMOKE-HIGH"');
-        return high !== -1 && high < text.indexOf('data-ticket-id="SMOKE-LOW"');
+        // 15 + 3×1 + 1×1 = 19, rendered with the pl-PL formatter on the real runtime.
+        return high !== -1 && high < text.indexOf('data-ticket-id="SMOKE-LOW"') && text.includes("19,0");
       },
     },
   ],
