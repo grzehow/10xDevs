@@ -60,3 +60,9 @@ The other executable check is `npm run smoke` (`scripts/smoke.mjs`) — a live-H
 - `@README.md` — setup walkthrough
 - `@context/foundation/prd.md` — requirements, non-goals, deadline
 - `@context/foundation/tech-stack.md` — stack decisions
+
+
+<!-- BEGIN @przeprogramowani/10x-cli -->
+
+
+<!-- END @przeprogramowani/10x-cli -->
