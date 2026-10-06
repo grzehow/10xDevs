@@ -75,7 +75,16 @@ const steps = [
       bodyCheck: (text) => {
         const high = text.indexOf('data-ticket-id="SMOKE-HIGH"');
         // 15 + 3×1 + 1×1 = 19, rendered with the pl-PL formatter on the real runtime.
-        return high !== -1 && high < text.indexOf('data-ticket-id="SMOKE-LOW"') && text.includes("19,0");
+        // The breakdown renders SMOKE-HIGH's customers component as 1 × 3,0 = 3,0. Match the whole line:
+        // the weight 3,0 alone appears on every row. \s* absorbs the JSX line break before the points.
+        return (
+          high !== -1 &&
+          high < text.indexOf('data-ticket-id="SMOKE-LOW"') &&
+          text.includes("19,0") &&
+          text.includes("<details") &&
+          ["severity", "customers", "services"].every((c) => text.includes(`data-component="${c}"`)) &&
+          /1 × 3,0 =\s*3,0/.test(text)
+        );
       },
     },
   ],

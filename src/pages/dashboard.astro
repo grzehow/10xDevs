@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { createClient } from "@/lib/supabase";
-import { MAX_BYTES, parseWeights, rankTickets, type RankedTicket } from "@/lib/ranking";
+import { MAX_BYTES, parseWeights, rankTickets, type RankedTicket, type Weights } from "@/lib/ranking";
 
 // TODO(S-03): one generic message for every bad-file case. Give missing column, empty cell,
 // wrong separator, unknown severity, duplicate id and size limit their own message (needs rankTickets to return a reason).
@@ -14,7 +14,7 @@ const scoreFormat = new Intl.NumberFormat("pl-PL", { minimumFractionDigits: 1, m
 const { role } = Astro.locals;
 const accountLabel = role === "admin" ? "Konto administracyjne" : "Konto operatorskie";
 
-async function rankUpload(): Promise<{ error: string } | { tickets: RankedTicket[] }> {
+async function rankUpload(): Promise<{ error: string } | { tickets: RankedTicket[]; weights: Weights }> {
   // formData() buffers the whole body, so refuse oversized requests first (64 KiB covers multipart overhead).
   if (Number(Astro.request.headers.get("content-length") ?? 0) > MAX_BYTES + 65_536) return { error: FILE_ERROR };
 
@@ -32,12 +32,12 @@ async function rankUpload(): Promise<{ error: string } | { tickets: RankedTicket
   if (!weights) return { error: WEIGHTS_ERROR };
 
   const ranked = rankTickets(await file.text(), weights);
-  return ranked.ok ? { tickets: ranked.tickets } : { error: FILE_ERROR };
+  return ranked.ok ? { tickets: ranked.tickets, weights } : { error: FILE_ERROR };
 }
 
 const outcome = Astro.request.method === "POST" ? await rankUpload() : null;
 const error = outcome && "error" in outcome ? outcome.error : null;
-const tickets = outcome && "tickets" in outcome ? outcome.tickets : null;
+const ranked = outcome && "tickets" in outcome ? outcome : null;
 ---
 
 <Layout title="Panel">
@@ -67,13 +67,34 @@ const tickets = outcome && "tickets" in outcome ? outcome.tickets : null;
           {error}
         </p>
       )}
-      {tickets && (
+      {ranked && (
         <ol class="mt-6 space-y-1 text-left text-sm">
-          {tickets.map((t) => (
-            <li data-ticket-id={t.ticketId} class="flex gap-4">
-              <span class="w-8 text-blue-100/60">{t.rank}.</span>
-              <span class="flex-1 font-mono">{t.ticketId}</span>
-              <span class="font-semibold">{scoreFormat.format(t.score)}</span>
+          {ranked.tickets.map((t) => (
+            <li data-ticket-id={t.ticketId}>
+              <details class="group">
+                {/* A flex summary drops the native marker, so the ▸ is the only "expands" cue. */}
+                <summary class="flex cursor-pointer list-none gap-4 [&::-webkit-details-marker]:hidden">
+                  <span aria-hidden="true" class="text-blue-100/60 transition-transform group-open:rotate-90">
+                    ▸
+                  </span>
+                  <span class="w-8 text-blue-100/60">{t.rank}.</span>
+                  <span class="flex-1 font-mono">{t.ticketId}</span>
+                  <span class="font-semibold">{scoreFormat.format(t.score)}</span>
+                </summary>
+                <ul class="mt-1 mb-2 ml-16 space-y-0.5 text-blue-100/80">
+                  <li data-component="severity">
+                    Krytyczność: {t.severity} = {scoreFormat.format(t.points.severity)}
+                  </li>
+                  <li data-component="customers">
+                    Klienci: {t.customers} × {scoreFormat.format(ranked.weights.customer)} ={" "}
+                    {scoreFormat.format(t.points.customers)}
+                  </li>
+                  <li data-component="services">
+                    Usługi: {t.services} × {scoreFormat.format(ranked.weights.service)} ={" "}
+                    {scoreFormat.format(t.points.services)}
+                  </li>
+                </ul>
+              </details>
             </li>
           ))}
         </ol>

@@ -3,7 +3,7 @@ project: "NOC Priority"
 version: 1
 status: draft
 created: 2026-09-28
-updated: 2026-09-30
+updated: 2026-10-06
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -56,7 +56,7 @@ składniki, z których powstał. Bez tego wróci do ręcznej analizy.
 | F-01 | shared-accounts-and-roles | (foundation) dwa wspólne konta z rozdziałem rol, bez rejestracji      | —             | FR-001, FR-007, Access Control | in-progress |
 | F-02 | persisted-weights         | (foundation) wagi reguły żyją trwale w bazie, z RLS pod rozdział kont | F-01          | FR-009, NFR odtwarzalność      | in-progress |
 | S-01 | csv-upload-ranked-list    | wgrać CSV i zobaczyć listę uszeregowaną malejąco po priorytecie       | F-01, F-02    | US-01, FR-002, FR-003, FR-004  | in-progress |
-| S-02 | score-breakdown           | rozwinąć pozycję i zobaczyć trzy składniki jej wyniku                 | S-01          | US-01, FR-005                  | proposed    |
+| S-02 | score-breakdown           | rozwinąć pozycję i zobaczyć trzy składniki jej wyniku                 | S-01          | US-01, FR-005                  | in-progress |
 | S-03 | csv-error-messages        | dostać czytelny komunikat przy niepoprawnym pliku i wgrać poprawiony  | S-01          | US-02, FR-006                  | proposed    |
 | S-04 | weights-admin             | zobaczyć obowiązujące wagi i zmienić je tak, że obowiązują trwale     | F-02          | US-03, FR-008, FR-009          | proposed    |
 | S-05 | weight-change-history     | zobaczyć historię zmian wag — co i kiedy zmieniono                    | S-04          | US-03, FR-010                  | proposed    |
@@ -137,7 +137,7 @@ Fundamenty poniżej zakładają, że to istnieje, i **nie** budują tego ponowni
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** To slice, który realizuje guardrail wytłumaczalności — bez niego operator nie sprawdzi, czy ranking ma sens. Pokusa, żeby pokazać rozbicie od razu przy każdej pozycji, robi ścianę danych dokładnie wtedy, gdy operator ma najmniej czasu; PRD rozstrzygnęło to na rzecz rozwijania.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-03: Operator dostaje czytelny komunikat przy niepoprawnym pliku
 

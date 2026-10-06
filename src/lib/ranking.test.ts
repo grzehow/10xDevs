@@ -17,8 +17,35 @@ void describe("rankTickets", () => {
     const result = rankTickets(csv("T1,major,2,5"), W);
     assert.deepEqual(result, {
       ok: true,
-      tickets: [{ rank: 1, ticketId: "T1", severity: "major", customers: 2, services: 5, score: 21 }],
+      tickets: [
+        {
+          rank: 1,
+          ticketId: "T1",
+          severity: "major",
+          customers: 2,
+          services: 5,
+          points: { severity: 10, customers: 6, services: 5 },
+          score: 21,
+        },
+      ],
     });
+  });
+
+  void test("each point follows its own weight", () => {
+    const weights: Weights = { warning: 0.1, minor: 0.3, major: 1.5, critical: 2, customer: 0.7, service: 0.2 };
+    const result = rankTickets(csv("W,warning,3,4", "M,major,2,9"), weights);
+    assert.ok(result.ok);
+    for (const t of result.tickets) {
+      assert.deepEqual(
+        t.points,
+        {
+          severity: weights[t.severity],
+          customers: weights.customer * t.customers,
+          services: weights.service * t.services,
+        },
+        t.ticketId,
+      );
+    }
   });
 
   void test("customers column weighs more than services", () => {
