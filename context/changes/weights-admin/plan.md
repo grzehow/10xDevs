@@ -233,14 +233,14 @@ The CHECK is added to a table that holds only the six PRD defaults, all in range
 
 #### Automated
 
-- [x] 2.1 Parser unit tests pass: `npm test`
-- [x] 2.2 Full local CI passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
-- [ ] 2.3 CI `smoke` job passes on the PR, including the new weights-screen redirect and admin save steps
+- [x] 2.1 Parser unit tests pass: `npm test` — 7d1a7f8
+- [x] 2.2 Full local CI passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build` — 7d1a7f8
+- [x] 2.3 CI `smoke` job passes on the PR, including the new weights-screen redirect and admin save steps — 7d1a7f8
 
 #### Manual
 
-- [x] 2.4 The admin changes `major` from 10 to 12, sees the confirmation, and a re-upload of `major,2,5` now scores 23,0
-- [x] 2.5 Entering `2,5`, `1000,01`, an empty field and `abc` shows the right per-field messages and saves nothing
-- [x] 2.6 The operator opening `/admin/weights` lands on `/dashboard` and sees no weights link there
-- [x] 2.7 One history row exists per changed weight after a save (checked in Supabase Studio)
-- [x] 2.8 The form is usable by keyboard alone, and errors are announced next to their fields
+- [x] 2.4 The admin changes `major` from 10 to 12, sees the confirmation, and a re-upload of `major,2,5` now scores 23,0 — 7d1a7f8
+- [x] 2.5 Entering `2,5`, `1000,01`, an empty field and `abc` shows the right per-field messages and saves nothing — 7d1a7f8
+- [x] 2.6 The operator opening `/admin/weights` lands on `/dashboard` and sees no weights link there — 7d1a7f8
+- [x] 2.7 One history row exists per changed weight after a save (checked in Supabase Studio) — 7d1a7f8
+- [x] 2.8 The form is usable by keyboard alone, and errors are announced next to their fields — 7d1a7f8
