@@ -1,7 +1,8 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { createClient } from "@/lib/supabase";
-import { MAX_BYTES, parseWeights, rankTickets, type RankedTicket, type Weights } from "@/lib/ranking";
+import { parseWeights } from "@/lib/ranking";
+import { rankUpload } from "@/lib/upload";
 
 // TODO(S-03): one generic message for every bad-file case. Give missing column, empty cell,
 // wrong separator, unknown severity, duplicate id and size limit their own message (needs rankTickets to return a reason).
@@ -14,30 +15,16 @@ const scoreFormat = new Intl.NumberFormat("pl-PL", { minimumFractionDigits: 1, m
 const { role } = Astro.locals;
 const accountLabel = role === "admin" ? "Konto administracyjne" : "Konto operatorskie";
 
-async function rankUpload(): Promise<{ error: string } | { tickets: RankedTicket[]; weights: Weights }> {
-  // formData() buffers the whole body, so refuse oversized requests first (64 KiB covers multipart overhead).
-  if (Number(Astro.request.headers.get("content-length") ?? 0) > MAX_BYTES + 65_536) return { error: FILE_ERROR };
-
-  let file: FormDataEntryValue | null;
-  try {
-    file = (await Astro.request.formData()).get("file");
-  } catch {
-    return { error: FILE_ERROR };
-  }
-  if (!(file instanceof File) || file.size > MAX_BYTES) return { error: FILE_ERROR };
-
+async function loadWeights() {
   const supabase = createClient(Astro.request.headers, Astro.cookies);
   const result = supabase ? await supabase.from("scoring_weights").select("key, value") : null;
-  const weights = result && !result.error ? parseWeights(result.data) : null;
-  if (!weights) return { error: WEIGHTS_ERROR };
-
-  const ranked = rankTickets(await file.text(), weights);
-  return ranked.ok ? { tickets: ranked.tickets, weights } : { error: FILE_ERROR };
+  return result && !result.error ? parseWeights(result.data) : null;
 }
 
-const outcome = Astro.request.method === "POST" ? await rankUpload() : null;
-const error = outcome && "error" in outcome ? outcome.error : null;
-const ranked = outcome && "tickets" in outcome ? outcome : null;
+const outcome = Astro.request.method === "POST" ? await rankUpload(Astro.request, loadWeights) : null;
+const failed = outcome && !outcome.ok ? outcome.error : null;
+const error = failed && (failed === "file" ? FILE_ERROR : WEIGHTS_ERROR);
+const ranked = outcome?.ok ? outcome : null;
 ---
 
 <Layout title="Panel">
@@ -63,7 +50,7 @@ const ranked = outcome && "tickets" in outcome ? outcome : null;
         </button>
       </form>
       {error && (
-        <p role="alert" class="mt-4 max-w-md text-sm text-red-200">
+        <p role="alert" data-error={failed} class="mt-4 max-w-md text-sm text-red-200">
           {error}
         </p>
       )}

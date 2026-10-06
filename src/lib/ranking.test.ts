@@ -98,6 +98,50 @@ void describe("rankTickets", () => {
     for (const text of bad) assert.deepEqual(rankTickets(text, W), { ok: false }, JSON.stringify(text));
   });
 
+  void test("one invalid row after valid rows rejects the whole file", () => {
+    const valid = ["V1,minor,0,0", "V2,major,1,1"];
+    const bad = [
+      csv(...valid, "T1,minor,0"),
+      csv(...valid, "T1,minor,0,0,0"),
+      csv(...valid, "T1,urgent,0,0"),
+      csv(...valid, "T1,minor,-1,0"),
+      csv(...valid, "T1,minor,,0"),
+      csv(...valid, ",minor,0,0"),
+      csv("A,minor,0,0", "B,urgent,0,0", "C,minor,0,0"),
+      csv("T1,minor,0,0\n\nT2,minor,0,0"),
+    ];
+    for (const text of bad) assert.deepEqual(rankTickets(text, W), { ok: false }, JSON.stringify(text));
+  });
+
+  void test("rejects hostile counts and severities", () => {
+    const hostile = [
+      "T1,minor,abc,0",
+      "T1,minor,+1,0",
+      "T1,minor,1e3,0",
+      "T1,minor,0x10,0",
+      "T1,minor,١,0",
+      'T1,minor,"2",0',
+      "T1,constructor,0,0",
+      "T1,__proto__,0,0",
+      "T1,toString,0,0",
+      "T1,hasOwnProperty,0,0",
+      'T1,"major",0,0',
+    ];
+    for (const row of hostile) {
+      const text = csv("V1,minor,0,0", row);
+      assert.deepEqual(rankTickets(text, W), { ok: false }, JSON.stringify(text));
+    }
+  });
+
+  void test("customers and services map to their own weights", () => {
+    const weights: Weights = { warning: 1, minor: 5, major: 10, critical: 15, customer: 4, service: 0.5 };
+    const result = rankTickets(csv("T1,major,2,5"), weights);
+    assert.ok(result.ok);
+    // 10 + 4*2 + 0.5*5; swapped it would be 10 + 4*5 + 0.5*2 = 31.
+    assert.deepEqual(result.tickets[0].points, { severity: 10, customers: 8, services: 2.5 });
+    assert.equal(result.tickets[0].score, 20.5);
+  });
+
   void test("accepts max rows", () => {
     const rows = Array.from({ length: MAX_ROWS }, (_, i) => `T${String(i)},minor,0,0`);
     assert.equal(ids(csv(...rows)).length, MAX_ROWS);
