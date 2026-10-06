@@ -172,19 +172,19 @@ None. No schema or data change.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Type check passes: `npx astro sync && npx astro check`
+- [x] 1.1 Unit tests pass: `npm test` — 2446389
+- [x] 1.2 Lint passes: `npm run lint` — 2446389
+- [x] 1.3 Type check passes: `npx astro sync && npx astro check` — 2446389
 
 ### Phase 2: Expandable rows on the dashboard
 
 #### Automated
 
-- [ ] 2.1 Full CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
-- [ ] 2.2 Smoke passes against a running server and Supabase: `npm run smoke`
+- [x] 2.1 Full CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
+- [x] 2.2 Smoke passes against a running server and Supabase: `npm run smoke`
 
 #### Manual
 
-- [ ] 2.3 After uploading a CSV containing `T1,major,2,5`, the collapsed list shows only rank, id, score and a visible expand indicator
-- [ ] 2.4 Expanding T1 shows `Krytyczność: major = 10,0`, `Klienci: 2 × 3,0 = 6,0`, `Usługi: 5 × 1,0 = 5,0`, with score `21,0`
-- [ ] 2.5 A row can be opened and closed with the keyboard (Tab, then Enter/Space)
+- [x] 2.3 After uploading a CSV containing `T1,major,2,5`, the collapsed list shows only rank, id, score and a visible expand indicator
+- [x] 2.4 Expanding T1 shows `Krytyczność: major = 10,0`, `Klienci: 2 × 3,0 = 6,0`, `Usługi: 5 × 1,0 = 5,0`, with score `21,0`
+- [x] 2.5 A row can be opened and closed with the keyboard (Tab, then Enter/Space)

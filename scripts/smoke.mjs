@@ -75,7 +75,15 @@ const steps = [
       bodyCheck: (text) => {
         const high = text.indexOf('data-ticket-id="SMOKE-HIGH"');
         // 15 + 3×1 + 1×1 = 19, rendered with the pl-PL formatter on the real runtime.
-        return high !== -1 && high < text.indexOf('data-ticket-id="SMOKE-LOW"') && text.includes("19,0");
+        // The breakdown renders the customers component as 1 × 3,0 = 3,0.
+        return (
+          high !== -1 &&
+          high < text.indexOf('data-ticket-id="SMOKE-LOW"') &&
+          text.includes("19,0") &&
+          text.includes("<details") &&
+          ["severity", "customers", "services"].every((c) => text.includes(`data-component="${c}"`)) &&
+          text.includes("3,0")
+        );
       },
     },
   ],
