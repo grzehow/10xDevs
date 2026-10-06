@@ -180,11 +180,11 @@ None. No schema or data change.
 
 #### Automated
 
-- [x] 2.1 Full CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
-- [x] 2.2 Smoke passes against a running server and Supabase: `npm run smoke`
+- [x] 2.1 Full CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build` — 8fa3eae
+- [x] 2.2 Smoke passes against a running server and Supabase: `npm run smoke` — 8fa3eae
 
 #### Manual
 
-- [x] 2.3 After uploading a CSV containing `T1,major,2,5`, the collapsed list shows only rank, id, score and a visible expand indicator
-- [x] 2.4 Expanding T1 shows `Krytyczność: major = 10,0`, `Klienci: 2 × 3,0 = 6,0`, `Usługi: 5 × 1,0 = 5,0`, with score `21,0`
-- [x] 2.5 A row can be opened and closed with the keyboard (Tab, then Enter/Space)
+- [x] 2.3 After uploading a CSV containing `T1,major,2,5`, the collapsed list shows only rank, id, score and a visible expand indicator — 8fa3eae
+- [x] 2.4 Expanding T1 shows `Krytyczność: major = 10,0`, `Klienci: 2 × 3,0 = 6,0`, `Usługi: 5 × 1,0 = 5,0`, with score `21,0` — 8fa3eae
+- [x] 2.5 A row can be opened and closed with the keyboard (Tab, then Enter/Space) — 8fa3eae
