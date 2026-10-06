@@ -68,11 +68,11 @@ Each row is a discrete rollout phase that will open its own change folder
 via `/10x-new`. Status moves left-to-right through the values below; the
 orchestrator updates Status as artifacts appear on disk.
 
-| #   | Phase name                               | Goal (one line)                                                               | Risks covered | Test types                    | Status      | Change folder                  |
-| --- | ---------------------------------------- | ----------------------------------------------------------------------------- | ------------- | ----------------------------- | ----------- | ------------------------------ |
-| 1   | CSV ingestion contract                   | Prove a bad file is rejected whole and columns map correctly                  | #1, #3, #6    | unit + upload API integration | complete      | testing-csv-ingestion-contract |
-| 2   | Ranking reproducibility and live weights | Prove byte-identical ordering and that saved weights apply on the next upload | #2, #5        | unit + integration            | not started | —                              |
-| 3   | Access split at API and RLS              | Prove the operator cannot reach or write anything admin-only                  | #4            | pgTAP + API integration       | not started | —                              |
+| #   | Phase name                               | Goal (one line)                                                               | Risks covered | Test types                        | Status      | Change folder                  |
+| --- | ---------------------------------------- | ----------------------------------------------------------------------------- | ------------- | --------------------------------- | ----------- | ------------------------------ |
+| 1   | CSV ingestion contract                   | Prove a bad file is rejected whole and columns map correctly                  | #1, #3, #6    | unit + upload POST (unit + smoke) | complete    | testing-csv-ingestion-contract |
+| 2   | Ranking reproducibility and live weights | Prove byte-identical ordering and that saved weights apply on the next upload | #2, #5        | unit + integration                | not started | —                              |
+| 3   | Access split at API and RLS              | Prove the operator cannot reach or write anything admin-only                  | #4            | pgTAP + API integration           | not started | —                              |
 
 Status vocabulary: `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`.
 
@@ -82,13 +82,13 @@ The classic test base for this project. Test-base profile: **sparse** —
 `node:test` over 2 files in `src/lib/`, 2 pgTAP files in
 `supabase/tests/database/`, plus the live-HTTP `scripts/smoke.mjs`.
 
-| Layer                     | Tool                                  | Version      | Notes                                                                                                                        |
-| ------------------------- | ------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| unit                      | `node:test` (built-in type stripping) | Node ≥ 22.18 | `npm test` over `src/**/*.test.ts`                                                                                           |
-| integration (upload POST) | none yet — see Phase 1                | —            | No upload API route: the upload is a form POST to `/dashboard`. Plan picks the harness; prefer `node:test` over a new runner |
-| database / RLS            | pgTAP via `supabase test db`          | Supabase CLI | Needs local Supabase (Docker); runs in CI `smoke` job                                                                        |
-| live smoke                | `scripts/smoke.mjs`                   | n/a          | Auth flow + CSV upload + admin weight round-trip; no filter argument                                                         |
-| e2e / browser             | none — not planned                    | —            | Playwright MCP available; adds no signal over API integration for current risks                                              |
+| Layer                     | Tool                                  | Version      | Notes                                                                                                                            |
+| ------------------------- | ------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| unit                      | `node:test` (built-in type stripping) | Node ≥ 22.18 | `npm test` over `src/**/*.test.ts`                                                                                               |
+| integration (upload POST) | `node:test` + `scripts/smoke.mjs`     | Node ≥ 22.18 | No upload API route: the upload is a form POST to `/dashboard`. Guards in `src/lib/upload.test.ts`; render rules in smoke (§6.2) |
+| database / RLS            | pgTAP via `supabase test db`          | Supabase CLI | Needs local Supabase (Docker); runs in CI `smoke` job                                                                            |
+| live smoke                | `scripts/smoke.mjs`                   | n/a          | Auth flow + CSV upload + admin weight round-trip; no filter argument                                                             |
+| e2e / browser             | none — not planned                    | —            | Playwright MCP available; adds no signal over API integration for current risks                                                  |
 
 **Stack grounding tools (current session):**
 

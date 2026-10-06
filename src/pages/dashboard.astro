@@ -22,8 +22,9 @@ async function loadWeights() {
 }
 
 const outcome = Astro.request.method === "POST" ? await rankUpload(Astro.request, loadWeights) : null;
-const error = outcome && "error" in outcome ? (outcome.error === "file" ? FILE_ERROR : WEIGHTS_ERROR) : null;
-const ranked = outcome && "tickets" in outcome ? outcome : null;
+const failed = outcome && !outcome.ok ? outcome.error : null;
+const error = failed && (failed === "file" ? FILE_ERROR : WEIGHTS_ERROR);
+const ranked = outcome?.ok ? outcome : null;
 ---
 
 <Layout title="Panel">
@@ -49,7 +50,7 @@ const ranked = outcome && "tickets" in outcome ? outcome : null;
         </button>
       </form>
       {error && (
-        <p role="alert" class="mt-4 max-w-md text-sm text-red-200">
+        <p role="alert" data-error={failed} class="mt-4 max-w-md text-sm text-red-200">
           {error}
         </p>
       )}

@@ -5,7 +5,7 @@ import { rankUpload } from "./upload.ts";
 
 const HEADER = "ticket_id,severity,number_of_customers,number_of_services";
 const W: Weights = { warning: 1, minor: 5, major: 10, critical: 15, customer: 3, service: 1 };
-const URL = "http://localhost/dashboard";
+const DASHBOARD_URL = "http://localhost/dashboard";
 
 const loader = (weights: Weights | null = W) => {
   const stub = {
@@ -18,7 +18,7 @@ const loader = (weights: Weights | null = W) => {
   return stub;
 };
 
-const post = (body: BodyInit, headers?: HeadersInit) => new Request(URL, { method: "POST", body, headers });
+const post = (body: BodyInit, headers?: HeadersInit) => new Request(DASHBOARD_URL, { method: "POST", body, headers });
 const upload = (file: FormDataEntryValue) => {
   const form = new FormData();
   form.append("file", file);
@@ -31,13 +31,16 @@ void describe("rankUpload", () => {
     const stub = loader();
     const request = post("small", { "content-length": String(MAX_BYTES + 65_537) });
     assert.equal(request.headers.get("content-length"), String(MAX_BYTES + 65_537));
-    assert.deepEqual(await rankUpload(request, stub.load), { error: "file" });
+    assert.deepEqual(await rankUpload(request, stub.load), { ok: false, error: "file" });
     assert.equal(stub.calls, 0);
   });
 
   void test("rejects a non-multipart body", async () => {
     const stub = loader();
-    assert.deepEqual(await rankUpload(post("hello", { "content-type": "text/plain" }), stub.load), { error: "file" });
+    assert.deepEqual(await rankUpload(post("hello", { "content-type": "text/plain" }), stub.load), {
+      ok: false,
+      error: "file",
+    });
     assert.equal(stub.calls, 0);
   });
 
@@ -45,19 +48,20 @@ void describe("rankUpload", () => {
     const stub = loader();
     const form = new FormData();
     form.append("other", "x");
-    assert.deepEqual(await rankUpload(post(form), stub.load), { error: "file" });
+    assert.deepEqual(await rankUpload(post(form), stub.load), { ok: false, error: "file" });
     assert.equal(stub.calls, 0);
   });
 
   void test("rejects a file field sent as a string", async () => {
     const stub = loader();
-    assert.deepEqual(await rankUpload(upload("T1,major,2,5"), stub.load), { error: "file" });
+    assert.deepEqual(await rankUpload(upload("T1,major,2,5"), stub.load), { ok: false, error: "file" });
     assert.equal(stub.calls, 0);
   });
 
   void test("rejects a file over MAX_BYTES", async () => {
     const stub = loader();
     assert.deepEqual(await rankUpload(upload(new File(["a".repeat(MAX_BYTES + 1)], "t.csv")), stub.load), {
+      ok: false,
       error: "file",
     });
     assert.equal(stub.calls, 0);
@@ -66,6 +70,7 @@ void describe("rankUpload", () => {
   void test("a file of exactly MAX_BYTES passes the size guard", async () => {
     const stub = loader();
     assert.deepEqual(await rankUpload(upload(new File(["a".repeat(MAX_BYTES)], "t.csv")), stub.load), {
+      ok: false,
       error: "file",
     });
     assert.equal(stub.calls, 1);
@@ -73,13 +78,19 @@ void describe("rankUpload", () => {
 
   void test("reports a weights failure", async () => {
     const stub = loader(null);
-    assert.deepEqual(await rankUpload(upload(csvFile("T1,major,2,5")), stub.load), { error: "weights" });
+    assert.deepEqual(await rankUpload(upload(csvFile("T1,major,2,5")), stub.load), { ok: false, error: "weights" });
     assert.equal(stub.calls, 1);
+  });
+
+  void test("reports a weights failure when the loader throws", async () => {
+    const throwing = () => Promise.reject(new Error("network down"));
+    assert.deepEqual(await rankUpload(upload(csvFile("T1,major,2,5")), throwing), { ok: false, error: "weights" });
   });
 
   void test("rejects a valid row followed by an invalid one", async () => {
     const stub = loader();
     assert.deepEqual(await rankUpload(upload(csvFile("T1,major,2,5", "T2,urgent,0,0")), stub.load), {
+      ok: false,
       error: "file",
     });
   });
@@ -87,6 +98,7 @@ void describe("rankUpload", () => {
   void test("ranks a valid file", async () => {
     const stub = loader();
     assert.deepEqual(await rankUpload(upload(csvFile("T1,major,2,5")), stub.load), {
+      ok: true,
       tickets: [
         {
           rank: 1,

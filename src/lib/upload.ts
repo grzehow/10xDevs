@@ -3,21 +3,26 @@ import { MAX_BYTES, rankTickets, type RankedTicket, type Weights } from "./ranki
 export async function rankUpload(
   request: Request,
   loadWeights: () => Promise<Weights | null>,
-): Promise<{ error: "file" | "weights" } | { tickets: RankedTicket[]; weights: Weights }> {
+): Promise<{ ok: false; error: "file" | "weights" } | { ok: true; tickets: RankedTicket[]; weights: Weights }> {
   // formData() buffers the whole body, so refuse oversized requests first (64 KiB covers multipart overhead).
-  if (Number(request.headers.get("content-length") ?? 0) > MAX_BYTES + 65_536) return { error: "file" };
+  if (Number(request.headers.get("content-length") ?? 0) > MAX_BYTES + 65_536) return { ok: false, error: "file" };
 
   let file: FormDataEntryValue | null;
   try {
     file = (await request.formData()).get("file");
   } catch {
-    return { error: "file" };
+    return { ok: false, error: "file" };
   }
-  if (!(file instanceof File) || file.size > MAX_BYTES) return { error: "file" };
+  if (!(file instanceof File) || file.size > MAX_BYTES) return { ok: false, error: "file" };
 
-  const weights = await loadWeights();
-  if (!weights) return { error: "weights" };
+  let weights: Weights | null;
+  try {
+    weights = await loadWeights();
+  } catch {
+    weights = null;
+  }
+  if (!weights) return { ok: false, error: "weights" };
 
   const ranked = rankTickets(await file.text(), weights);
-  return ranked.ok ? { tickets: ranked.tickets, weights } : { error: "file" };
+  return ranked.ok ? { ok: true, tickets: ranked.tickets, weights } : { ok: false, error: "file" };
 }

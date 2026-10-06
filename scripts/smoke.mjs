@@ -140,8 +140,9 @@ const steps = [
       }),
     {
       status: 200,
-      // Valid row first, so skipping the bad row would render SMOKE-OK. Asserts the alert, not its Polish copy.
-      bodyCheck: (text) => text.includes('role="alert"') && !text.includes("data-ticket-id="),
+      // Valid row first, so skipping the bad row would render SMOKE-OK. data-error tells a file error from a weights
+      // failure (same alert) without asserting its Polish copy.
+      bodyCheck: (text) => text.includes('data-error="file"') && !text.includes("data-ticket-id="),
     },
   ],
   [
