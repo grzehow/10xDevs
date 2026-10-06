@@ -16,7 +16,8 @@ export const MAX_ROWS = 1000;
 export const MAX_BYTES = 1_048_576;
 
 const SEVERITY_RANK: Record<Severity, number> = { warning: 0, minor: 1, major: 2, critical: 3 };
-const WEIGHT_KEYS = ["warning", "minor", "major", "critical", "customer", "service"] as const;
+export const WEIGHT_KEYS = ["warning", "minor", "major", "critical", "customer", "service"] as const;
+export type WeightKey = (typeof WEIGHT_KEYS)[number];
 const HEADER = "ticket_id,severity,number_of_customers,number_of_services";
 // Capped at 9 digits so a huge count can't overflow the score to Infinity.
 const COUNT = /^\d{1,9}$/;

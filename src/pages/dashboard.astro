@@ -78,6 +78,11 @@ const tickets = outcome && "tickets" in outcome ? outcome.tickets : null;
           ))}
         </ol>
       )}
+      {role === "admin" && (
+        <a href="/admin/weights" class="mt-6 inline-block text-sm text-blue-100/80 underline hover:text-white">
+          Wagi reguły
+        </a>
+      )}
       <form method="POST" action="/api/auth/signout" class="mt-6">
         <button
           type="submit"

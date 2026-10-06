@@ -1,10 +1,13 @@
-// Smoke test: proves the built app, the Cloudflare adapter and the Supabase auth flow still work together.
+// Smoke test: proves the built app, the Cloudflare adapter, the Supabase auth flow and the admin weights save still work together.
 // Zero dependencies on purpose. Run against a live server: BASE_URL=http://localhost:4321 node scripts/smoke.mjs
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 // Seeded operator from supabase/seed.sql; override both for a cloud project.
 const email = process.env.SMOKE_EMAIL ?? "operator@noc.local";
 const password = process.env.SMOKE_PASSWORD ?? "Operator-Dev-Passw0rd!";
+// Seeded admin; the admin steps change `major` to 12 and back, so against a cloud project they write two history rows.
+const adminEmail = process.env.SMOKE_ADMIN_EMAIL ?? "admin@noc.local";
+const adminPassword = process.env.SMOKE_ADMIN_PASSWORD ?? "Admin-Dev-Passw0rd!";
 const jar = new Map();
 
 function cookieHeader() {
@@ -42,9 +45,23 @@ function csvUpload(csv) {
   return body;
 }
 
+const defaultWeights = { warning: 1, minor: 5, major: 10, critical: 15, customer: 3, service: 1 };
+const saveWeights = (overrides = {}) =>
+  request("/admin/weights", { method: "POST", form: { ...defaultWeights, ...overrides } });
+
+function clearSession() {
+  jar.clear();
+  return request("/");
+}
+
 const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  [
+    "weights screen redirects anonymous user",
+    () => request("/admin/weights"),
+    { status: 302, location: "/auth/signin" },
+  ],
   [
     "signup endpoint is gone",
     () => request("/api/auth/signup", { method: "POST", form: { email, password } }),
@@ -61,6 +78,7 @@ const steps = [
     { status: 302, location: "/" },
   ],
   ["dashboard renders for signed-in user", () => request("/dashboard"), { status: 200 }],
+  ["weights screen redirects operator", () => request("/admin/weights"), { status: 302, location: "/dashboard" }],
   [
     "dashboard ranks uploaded csv",
     () =>
@@ -81,6 +99,34 @@ const steps = [
   ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  // Admin part. Steps never abort the run, so the restore step always executes and leaves major=10.
+  ["cookie jar cleared", clearSession, { status: 200 }],
+  [
+    "admin signin accepts correct password",
+    () => request("/api/auth/signin", { method: "POST", form: { email: adminEmail, password: adminPassword } }),
+    { status: 302, location: "/" },
+  ],
+  ["admin saves major=12", () => saveWeights({ major: 12 }), { status: 302, location: "/admin/weights?saved=1" }],
+  [
+    "upload ranks with the new weights",
+    () =>
+      request("/dashboard", {
+        method: "POST",
+        multipart: csvUpload("ticket_id,severity,number_of_customers,number_of_services\nSMOKE-WEIGHTS,major,2,5\n"),
+      }),
+    {
+      status: 200,
+      // 12 + 3×2 + 1×5 = 23, rendered with the pl-PL formatter on the real runtime.
+      bodyCheck: (text) => text.includes('data-ticket-id="SMOKE-WEIGHTS"') && text.includes("23,0"),
+    },
+  ],
+  ["admin restores defaults", () => saveWeights(), { status: 302, location: "/admin/weights?saved=1" }],
+  ["admin signout", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
+  [
+    "weights screen redirects after admin signout",
+    () => request("/admin/weights"),
+    { status: 302, location: "/auth/signin" },
+  ],
 ];
 
 let failed = 0;

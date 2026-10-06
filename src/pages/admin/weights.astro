@@ -1,0 +1,127 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { createClient } from "@/lib/supabase";
+import { WEIGHT_KEYS, parseWeights, type WeightKey } from "@/lib/ranking";
+import { parseWeightsForm } from "@/lib/weights-form";
+import { cn } from "@/lib/utils";
+
+const LOAD_ERROR = "Nie udało się wczytać wag reguły. Spróbuj ponownie za chwilę.";
+const SAVE_ERROR = "Nie udało się zapisać wag. Spróbuj ponownie za chwilę.";
+
+const LABELS: Record<WeightKey, string> = {
+  warning: "Waga: ostrzeżenie (warning)",
+  minor: "Waga: drobna (minor)",
+  major: "Waga: poważna (major)",
+  critical: "Waga: krytyczna (critical)",
+  customer: "Mnożnik za każdego klienta",
+  service: "Mnożnik za każdą usługę",
+};
+
+const numberFormat = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2, useGrouping: false });
+
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+
+let inputs: Record<WeightKey, string> | null = null;
+let errors: Partial<Record<WeightKey, string>> = {};
+let formError: string | null = null;
+
+if (Astro.request.method === "POST") {
+  const parsed = parseWeightsForm(await Astro.request.formData().catch(() => new FormData()));
+  if (parsed.ok) {
+    const v = parsed.values;
+    const result = supabase
+      ? await supabase.rpc("update_scoring_weights", {
+          p_warning: v.warning,
+          p_minor: v.minor,
+          p_major: v.major,
+          p_critical: v.critical,
+          p_customer: v.customer,
+          p_service: v.service,
+        })
+      : null;
+    if (result && !result.error) return Astro.redirect("/admin/weights?saved=1");
+    inputs = { ...v };
+    formError = SAVE_ERROR;
+  } else {
+    inputs = parsed.raw;
+    errors = parsed.errors;
+    Astro.response.status = 400;
+  }
+}
+
+if (!inputs) {
+  const result = supabase ? await supabase.from("scoring_weights").select("key, value") : null;
+  const weights = result && !result.error ? parseWeights(result.data) : null;
+  if (weights) {
+    inputs = Object.fromEntries(WEIGHT_KEYS.map((key) => [key, numberFormat.format(weights[key])])) as Record<
+      WeightKey,
+      string
+    >;
+  } else {
+    formError = LOAD_ERROR;
+  }
+}
+
+const fields = inputs;
+const saved = Astro.url.searchParams.get("saved") === "1";
+---
+
+<Layout title="Wagi reguły">
+  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-white/10 p-8 text-white backdrop-blur-xl">
+      <h1 class="mb-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
+        Wagi reguły
+      </h1>
+      <p class="text-sm text-blue-100/80">Zmiany obowiązują od następnego wgrania pliku.</p>
+      {saved && (
+        <p role="status" class="mt-4 text-sm text-green-200">
+          Zapisano wagi.
+        </p>
+      )}
+      {formError && (
+        <p role="alert" class="mt-4 text-sm text-red-200">
+          {formError}
+        </p>
+      )}
+      {fields && (
+        <form method="POST" class="mt-6 flex flex-col gap-4">
+          {WEIGHT_KEYS.map((key) => (
+            <div class="flex flex-col gap-1">
+              <label for={key} class="text-sm text-blue-100/80">
+                {LABELS[key]}
+              </label>
+              <input
+                id={key}
+                name={key}
+                type="text"
+                inputmode="decimal"
+                autocomplete="off"
+                value={fields[key]}
+                aria-invalid={errors[key] ? "true" : undefined}
+                aria-describedby={errors[key] ? `${key}-error` : undefined}
+                class={cn(
+                  "rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm",
+                  errors[key] && "border-red-300/70",
+                )}
+              />
+              {errors[key] && (
+                <p id={`${key}-error`} class="text-xs text-red-200">
+                  {errors[key]}
+                </p>
+              )}
+            </div>
+          ))}
+          <button
+            type="submit"
+            class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+          >
+            Zapisz
+          </button>
+        </form>
+      )}
+      <a href="/dashboard" class="mt-6 inline-block text-sm text-blue-100/80 underline hover:text-white">
+        Wróć do panelu
+      </a>
+    </div>
+  </div>
+</Layout>

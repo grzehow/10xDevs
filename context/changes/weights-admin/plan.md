@@ -221,26 +221,26 @@ The CHECK is added to a table that holds only the six PRD defaults, all in range
 
 #### Automated
 
-- [ ] 1.1 Migration applies on a fresh DB (CI `smoke` job on the pushed branch, or `npx supabase db reset` where Docker exists)
-- [ ] 1.2 pgTAP suite passes (CI `smoke` job runs `supabase test db` on the pushed branch)
+- [x] 1.1 Migration applies on a fresh DB (CI `smoke` job on the pushed branch, or `npx supabase db reset` where Docker exists) — f712d9b
+- [x] 1.2 pgTAP suite passes (CI `smoke` job runs `supabase test db` on the pushed branch) — f712d9b
 - [x] 1.3 Full local CI passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build` — 11df301
 
 #### Manual
 
-- [ ] 1.4 The cloud project has the migration applied (`npx supabase db push`), and the six weights still read 1/5/10/15/3/1
+- [x] 1.4 The cloud project has the migration applied (`npx supabase db push`), and the six weights still read 1/5/10/15/3/1 — f712d9b
 
 ### Phase 2: Admin weights screen
 
 #### Automated
 
-- [ ] 2.1 Parser unit tests pass: `npm test`
-- [ ] 2.2 Full local CI passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
+- [x] 2.1 Parser unit tests pass: `npm test`
+- [x] 2.2 Full local CI passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
 - [ ] 2.3 CI `smoke` job passes on the PR, including the new weights-screen redirect and admin save steps
 
 #### Manual
 
-- [ ] 2.4 The admin changes `major` from 10 to 12, sees the confirmation, and a re-upload of `major,2,5` now scores 23,0
-- [ ] 2.5 Entering `2,5`, `1000,01`, an empty field and `abc` shows the right per-field messages and saves nothing
-- [ ] 2.6 The operator opening `/admin/weights` lands on `/dashboard` and sees no weights link there
-- [ ] 2.7 One history row exists per changed weight after a save (checked in Supabase Studio)
-- [ ] 2.8 The form is usable by keyboard alone, and errors are announced next to their fields
+- [x] 2.4 The admin changes `major` from 10 to 12, sees the confirmation, and a re-upload of `major,2,5` now scores 23,0
+- [x] 2.5 Entering `2,5`, `1000,01`, an empty field and `abc` shows the right per-field messages and saves nothing
+- [x] 2.6 The operator opening `/admin/weights` lands on `/dashboard` and sees no weights link there
+- [x] 2.7 One history row exists per changed weight after a save (checked in Supabase Studio)
+- [x] 2.8 The form is usable by keyboard alone, and errors are announced next to their fields
