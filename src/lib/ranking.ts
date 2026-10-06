@@ -7,6 +7,7 @@ export interface RankedTicket {
   severity: Severity;
   customers: number;
   services: number;
+  points: { severity: number; customers: number; services: number };
   score: number;
 }
 
@@ -54,8 +55,14 @@ export function rankTickets(csv: string, weights: Weights): RankResult {
     seen.add(ticketId);
     const customers = Number(customersRaw);
     const services = Number(servicesRaw);
-    const score = weights[severity] + weights.customer * customers + weights.service * services;
-    scored.push({ ticketId, severity, customers, services, score, key: Math.round(score * 1e9) });
+    const points = {
+      severity: weights[severity],
+      customers: weights.customer * customers,
+      services: weights.service * services,
+    };
+    // Same summation order as the formula, so the float score (and tie-breaking) is unchanged.
+    const score = points.severity + points.customers + points.services;
+    scored.push({ ticketId, severity, customers, services, points, score, key: Math.round(score * 1e9) });
   }
 
   scored.sort(
