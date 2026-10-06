@@ -223,7 +223,7 @@ The CHECK is added to a table that holds only the six PRD defaults, all in range
 
 - [ ] 1.1 Migration applies on a fresh DB (CI `smoke` job on the pushed branch, or `npx supabase db reset` where Docker exists)
 - [ ] 1.2 pgTAP suite passes (CI `smoke` job runs `supabase test db` on the pushed branch)
-- [x] 1.3 Full local CI passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
+- [x] 1.3 Full local CI passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build` — 11df301
 
 #### Manual
 

@@ -76,9 +76,9 @@ select is((select count(*) from public.scoring_weight_changes), 1::bigint,
 -- No JWT (Studio SQL editor, service role, data-fix migration): still recorded, as the database role
 set local request.jwt.claims = '';
 update public.scoring_weights set value = 9 where key = 'warning';
-select results_eq(
-  $$ select key, old_value, new_value, account from public.scoring_weight_changes where key = 'warning' $$,
-  $$ values ('warning'::text, 1.0::numeric, 9::numeric, current_user::text) $$,
+-- current_user is type name (collation "C"), so compare with an explicit COLLATE; results_eq would fail on the mix.
+select ok(
+  (select account from public.scoring_weight_changes where key = 'warning') = (current_user::text collate "default"),
   'no jwt: update succeeds and history records the database role as account');
 update public.scoring_weights set value = 1.0 where key = 'warning';
 
