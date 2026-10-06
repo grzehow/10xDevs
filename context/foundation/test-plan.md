@@ -70,7 +70,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | #   | Phase name                               | Goal (one line)                                                               | Risks covered | Test types                    | Status      | Change folder                  |
 | --- | ---------------------------------------- | ----------------------------------------------------------------------------- | ------------- | ----------------------------- | ----------- | ------------------------------ |
-| 1   | CSV ingestion contract                   | Prove a bad file is rejected whole and columns map correctly                  | #1, #3, #6    | unit + upload API integration | planned     | testing-csv-ingestion-contract |
+| 1   | CSV ingestion contract                   | Prove a bad file is rejected whole and columns map correctly                  | #1, #3, #6    | unit + upload API integration | complete      | testing-csv-ingestion-contract |
 | 2   | Ranking reproducibility and live weights | Prove byte-identical ordering and that saved weights apply on the next upload | #2, #5        | unit + integration            | not started | —                              |
 | 3   | Access split at API and RLS              | Prove the operator cannot reach or write anything admin-only                  | #4            | pgTAP + API integration       | not started | —                              |
 

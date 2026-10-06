@@ -266,10 +266,10 @@ Prove the two template-only rules on the real runtime and record the shipped pat
 
 #### Automated
 
-- [x] 2.1 Smoke script still parses: `node --check scripts/smoke.mjs`
-- [x] 2.2 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
-- [ ] 2.3 CI `smoke` job is green on the PR, including the two new steps
+- [x] 2.1 Smoke script still parses: `node --check scripts/smoke.mjs` — c3fac75
+- [x] 2.2 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build` — c3fac75
+- [x] 2.3 CI `smoke` job is green on the PR, including the two new steps — c3fac75
 
 #### Manual
 
-- [x] 2.4 test-plan §6.2 reads as a usable recipe for someone who hasn't seen this change
+- [x] 2.4 test-plan §6.2 reads as a usable recipe for someone who hasn't seen this change — c3fac75

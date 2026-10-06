@@ -1,7 +1,7 @@
 ---
 change_id: testing-csv-ingestion-contract
 title: Test rollout phase 1 — CSV ingestion contract
-status: implementing
+status: implemented
 created: 2026-10-06
 updated: 2026-10-06
 archived_at: null
