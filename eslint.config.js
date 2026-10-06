@@ -64,6 +64,9 @@ const astroConfig = defineConfig({
     parserOptions: { projectService: false, project: "./tsconfig.json", tsconfigRootDir: import.meta.dirname },
   },
   rules: {
+    // Astro frontmatter allows a top-level `return Astro.redirect(...)`; the `returns` check looks for an enclosing
+    // function, finds none and crashes ESLint ("Expected node to have a parent").
+    "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: false, returns: false } }],
     "astro/no-set-html-directive": "error",
     "astro/no-unused-css-selector": "warn",
     "astro/prefer-class-list-directive": "warn",

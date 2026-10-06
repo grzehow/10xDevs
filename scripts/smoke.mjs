@@ -1,10 +1,14 @@
-// Smoke test: proves the built app, the Cloudflare adapter and the Supabase auth flow still work together.
+// Smoke test: proves the built app, the Cloudflare adapter, the Supabase auth flow and the admin weights save still work together.
 // Zero dependencies on purpose. Run against a live server: BASE_URL=http://localhost:4321 node scripts/smoke.mjs
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 // Seeded operator from supabase/seed.sql; override both for a cloud project.
 const email = process.env.SMOKE_EMAIL ?? "operator@noc.local";
 const password = process.env.SMOKE_PASSWORD ?? "Operator-Dev-Passw0rd!";
+// Seeded admin. The admin steps read the current weights, set `major` to 12 and write the originals back, so against a
+// cloud project they leave the weights as found and add two history rows.
+const adminEmail = process.env.SMOKE_ADMIN_EMAIL ?? "admin@noc.local";
+const adminPassword = process.env.SMOKE_ADMIN_PASSWORD ?? "Admin-Dev-Passw0rd!";
 const jar = new Map();
 
 function cookieHeader() {
@@ -42,9 +46,45 @@ function csvUpload(csv) {
   return body;
 }
 
+const WEIGHT_KEYS = ["warning", "minor", "major", "critical", "customer", "service"];
+const scoreFormat = new Intl.NumberFormat("pl-PL", { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+const asNumber = (shown) => Number(shown.replace(",", "."));
+
+// The weights exactly as the form shows them (pl-PL strings such as "2,5"), read before the first write so they can
+// be restored byte for byte. Stays null if the read fails.
+let original = null;
+
+async function readWeights() {
+  const response = await request("/admin/weights");
+  const found = {};
+  for (const key of WEIGHT_KEYS) {
+    const tag = new RegExp(`<input[^>]*name="${key}"[^>]*>`).exec(response.text)?.[0];
+    const value = tag === undefined ? undefined : /value="([^"]*)"/.exec(tag)?.[1];
+    if (value !== undefined) found[key] = value;
+  }
+  original = Object.keys(found).length === WEIGHT_KEYS.length ? found : null;
+  return response;
+}
+
+// Never writes unless the current weights were read, so a failed read cannot overwrite them with made-up values.
+const saveWeights = (overrides = {}) =>
+  original
+    ? request("/admin/weights", { method: "POST", form: { ...original, ...overrides } })
+    : Promise.resolve({ status: 0, location: "", text: "current weights were not read" });
+
+function clearSession() {
+  jar.clear();
+  return request("/");
+}
+
 const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  [
+    "weights screen redirects anonymous user",
+    () => request("/admin/weights"),
+    { status: 302, location: "/auth/signin" },
+  ],
   [
     "signup endpoint is gone",
     () => request("/api/auth/signup", { method: "POST", form: { email, password } }),
@@ -61,6 +101,7 @@ const steps = [
     { status: 302, location: "/" },
   ],
   ["dashboard renders for signed-in user", () => request("/dashboard"), { status: 200 }],
+  ["weights screen redirects operator", () => request("/admin/weights"), { status: 302, location: "/dashboard" }],
   [
     "dashboard ranks uploaded csv",
     () =>
@@ -90,11 +131,49 @@ const steps = [
   ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  // Admin part. A step that fails or throws is recorded and the run goes on, so the restore step still executes and
+  // writes back the weights read below.
+  ["cookie jar cleared", clearSession, { status: 200 }],
+  [
+    "admin signin accepts correct password",
+    () => request("/api/auth/signin", { method: "POST", form: { email: adminEmail, password: adminPassword } }),
+    { status: 302, location: "/" },
+  ],
+  ["admin reads current weights", readWeights, { status: 200, bodyCheck: () => original !== null }],
+  ["admin saves major=12", () => saveWeights({ major: 12 }), { status: 302, location: "/admin/weights?saved=1" }],
+  [
+    "upload ranks with the new weights",
+    () =>
+      request("/dashboard", {
+        method: "POST",
+        multipart: csvUpload("ticket_id,severity,number_of_customers,number_of_services\nSMOKE-WEIGHTS,major,2,5\n"),
+      }),
+    {
+      status: 200,
+      // major 12 + customer × 2 + service × 5 (23,0 with the PRD defaults), rendered with the pl-PL formatter.
+      bodyCheck: (text) =>
+        original !== null &&
+        text.includes('data-ticket-id="SMOKE-WEIGHTS"') &&
+        text.includes(scoreFormat.format(12 + asNumber(original.customer) * 2 + asNumber(original.service) * 5)),
+    },
+  ],
+  ["admin restores original weights", () => saveWeights(), { status: 302, location: "/admin/weights?saved=1" }],
+  ["admin signout", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
+  [
+    "weights screen redirects after admin signout",
+    () => request("/admin/weights"),
+    { status: 302, location: "/auth/signin" },
+  ],
 ];
 
 let failed = 0;
 for (const [name, run, expected] of steps) {
-  const actual = await run();
+  let actual;
+  try {
+    actual = await run();
+  } catch (error) {
+    actual = { status: 0, location: String(error), text: "" };
+  }
   const ok =
     actual.status === expected.status &&
     (expected.location === undefined || actual.location.startsWith(expected.location)) &&

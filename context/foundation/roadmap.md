@@ -58,7 +58,7 @@ składniki, z których powstał. Bez tego wróci do ręcznej analizy.
 | S-01 | csv-upload-ranked-list    | wgrać CSV i zobaczyć listę uszeregowaną malejąco po priorytecie       | F-01, F-02    | US-01, FR-002, FR-003, FR-004  | in-progress |
 | S-02 | score-breakdown           | rozwinąć pozycję i zobaczyć trzy składniki jej wyniku                 | S-01          | US-01, FR-005                  | in-progress |
 | S-03 | csv-error-messages        | dostać czytelny komunikat przy niepoprawnym pliku i wgrać poprawiony  | S-01          | US-02, FR-006                  | proposed    |
-| S-04 | weights-admin             | zobaczyć obowiązujące wagi i zmienić je tak, że obowiązują trwale     | F-02          | US-03, FR-008, FR-009          | proposed    |
+| S-04 | weights-admin             | zobaczyć obowiązujące wagi i zmienić je tak, że obowiązują trwale     | F-02          | US-03, FR-008, FR-009          | in-progress |
 | S-05 | weight-change-history     | zobaczyć historię zmian wag — co i kiedy zmieniono                    | S-04          | US-03, FR-010                  | proposed    |
 
 ## Streams
@@ -163,7 +163,7 @@ Fundamenty poniżej zakładają, że to istnieje, i **nie** budują tego ponowni
 - **Unknowns:**
   - Czy wagi mają ograniczony zakres wpisywanych wartości (np. nieujemne, górny limit)? PRD rozważyło brak walidacji i zostawiło FR bez zmian — warto potwierdzić przed planowaniem. — Owner: user. Block: no.
 - **Risk:** Zmiana wagi w trakcie awarii przestawiłaby ranking pod operatorem, który już zaczął pracę — dlatego zmiana obowiązuje od następnego wgrania, nie natychmiast. Konto operatorskie czyta wagi tylko do liczenia wyniku i nie może ich zapisać; to RLS z F-02, nie ukrycie przycisku w interfejsie. Zapis wag wymaga nowej migracji z ograniczeniem `check (value >= 0 and value <> 'NaN' and value <> 'Infinity')` — `numeric` przyjmuje NaN, które sortuje się ponad każdą liczbę i psuje odtwarzalność rankingu. Ta sama migracja zawęża uprawnienie do `grant update (value)`, żeby klucza wagi nie dało się zmienić. Ten slice zapisuje wiersze historii, które S-05 tylko wyświetla.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-05: Administrator widzi historię zmian wag
 
