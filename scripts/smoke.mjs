@@ -129,6 +129,38 @@ const steps = [
       },
     },
   ],
+  [
+    "dashboard rejects file with a bad row",
+    () =>
+      request("/dashboard", {
+        method: "POST",
+        multipart: csvUpload(
+          "ticket_id,severity,number_of_customers,number_of_services\nSMOKE-OK,minor,0,0\nSMOKE-BAD,urgent,0,0\n",
+        ),
+      }),
+    {
+      status: 200,
+      // Valid row first, so skipping the bad row would render SMOKE-OK. Asserts the alert, not its Polish copy.
+      bodyCheck: (text) => text.includes('role="alert"') && !text.includes("data-ticket-id="),
+    },
+  ],
+  [
+    "dashboard renders asymmetric customers and services",
+    () =>
+      request("/dashboard", {
+        method: "POST",
+        multipart: csvUpload("ticket_id,severity,number_of_customers,number_of_services\nSMOKE-ASYM,major,2,5\n"),
+      }),
+    {
+      status: 200,
+      // PRD default weights, as in the 19,0 step: 10 + 3×2 + 1×5 = 21. Swapped counts would render 5 × 3,0 and 2 × 1,0.
+      bodyCheck: (text) =>
+        text.includes('data-ticket-id="SMOKE-ASYM"') &&
+        text.includes("21,0") &&
+        /2 × 3,0 =\s*6,0/.test(text) &&
+        /5 × 1,0 =\s*5,0/.test(text),
+    },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   // Admin part. A step that fails or throws is recorded and the run goes on, so the restore step still executes and

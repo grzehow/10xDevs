@@ -253,23 +253,23 @@ Prove the two template-only rules on the real runtime and record the shipped pat
 
 #### Automated
 
-- [x] 1.1 New parser fixtures pass: `npm test`
-- [x] 1.2 Upload handling tests pass: `npm test`
-- [x] 1.3 Mutation check: temporarily change `return { ok: false }` at `ranking.ts:54` to `continue`, confirm `npm test` fails, then revert
-- [x] 1.4 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
+- [x] 1.1 New parser fixtures pass: `npm test` — 84ecfaa
+- [x] 1.2 Upload handling tests pass: `npm test` — 84ecfaa
+- [x] 1.3 Mutation check: temporarily change `return { ok: false }` at `ranking.ts:54` to `continue`, confirm `npm test` fails, then revert — 84ecfaa
+- [x] 1.4 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build` — 84ecfaa
 
 #### Manual
 
-- [x] 1.5 `dashboard.astro` frontmatter contains no guard logic, only the loader, the error-kind → copy mapping and render data
+- [x] 1.5 `dashboard.astro` frontmatter contains no guard logic, only the loader, the error-kind → copy mapping and render data — 84ecfaa
 
 ### Phase 2: Smoke assertions for render rules and test-plan cookbook
 
 #### Automated
 
-- [ ] 2.1 Smoke script still parses: `node --check scripts/smoke.mjs`
-- [ ] 2.2 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
+- [x] 2.1 Smoke script still parses: `node --check scripts/smoke.mjs`
+- [x] 2.2 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
 - [ ] 2.3 CI `smoke` job is green on the PR, including the two new steps
 
 #### Manual
 
-- [ ] 2.4 test-plan §6.2 reads as a usable recipe for someone who hasn't seen this change
+- [x] 2.4 test-plan §6.2 reads as a usable recipe for someone who hasn't seen this change

@@ -99,13 +99,13 @@ The classic test base for this project. Test-base profile: **sparse** —
 
 ## 5. Quality Gates
 
-| Gate                         | Where               | Required?                 | Catches                                                       |
-| ---------------------------- | ------------------- | ------------------------- | ------------------------------------------------------------- |
-| lint + `astro check` + build | local + CI `ci` job | required                  | syntactic / type drift                                        |
-| unit (`npm test`)            | local + CI `ci` job | required                  | scoring and parsing logic regressions                         |
-| upload API integration       | local + CI          | required after §3 Phase 1 | partial acceptance, column mapping, hostile input             |
-| pgTAP (`supabase test db`)   | CI `smoke` job      | required                  | RLS and weight constraint regressions; extended in §3 Phase 3 |
-| live smoke (`npm run smoke`) | CI `smoke` job      | required                  | broken end-to-end auth / upload / admin path                  |
+| Gate                         | Where                                        | Required?                 | Catches                                                       |
+| ---------------------------- | -------------------------------------------- | ------------------------- | ------------------------------------------------------------- |
+| lint + `astro check` + build | local + CI `ci` job                          | required                  | syntactic / type drift                                        |
+| unit (`npm test`)            | local + CI `ci` job                          | required                  | scoring and parsing logic regressions                         |
+| upload POST (unit + smoke)   | local + CI `ci` (unit) / CI `smoke` (render) | required after §3 Phase 1 | partial acceptance, column mapping, hostile input             |
+| pgTAP (`supabase test db`)   | CI `smoke` job                               | required                  | RLS and weight constraint regressions; extended in §3 Phase 3 |
+| live smoke (`npm run smoke`) | CI `smoke` job                               | required                  | broken end-to-end auth / upload / admin path                  |
 
 ## 6. Cookbook Patterns
 
@@ -121,7 +121,19 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.2 Adding a test for CSV rejection / column mapping
 
-- TBD — see §3 Phase 1 (whole-file rejection and customers-before-services pattern).
+- **Rejection / mapping fixtures**: `src/lib/ranking.test.ts`. Put valid rows **before** the bad row, so a skipped
+  row would still return a list. Assert `{ ok: false }`, never error copy.
+- **Upload guards** (size, body, `file` field): `src/lib/upload.test.ts`. Build a `Request` with `FormData`/`File` and
+  count weights-loader calls — a rejected file must make 0.
+- **Render-only rules**: `scripts/smoke.mjs`. On error assert `role="alert"` and no `data-ticket-id=`; for the
+  breakdown match whole component lines such as `/2 × 3,0 =\s*6,0/`.
+- **Mapping rule**: always customers ≠ services and, at unit level, non-default `customer`/`service` weights. Expected
+  scores are hand-derived from the PRD formula.
+- **Reference tests**: "one invalid row after valid rows rejects the whole file", "rejects hostile counts and
+  severities", "customers and services map to their own weights" (`ranking.test.ts`); "rejects a file over MAX_BYTES",
+  "rejects a valid row followed by an invalid one" (`upload.test.ts`); "dashboard rejects file with a bad row",
+  "dashboard renders asymmetric customers and services" (`smoke.mjs`).
+- **Run**: `npm test`; smoke via the CI `smoke` job (or `npm run smoke` against a running server).
 
 ### 6.3 Adding a reproducibility or live-weights test
 
@@ -137,6 +149,12 @@ the relevant rollout phase ships; before that, the sub-section reads
 ### 6.5 Per-rollout-phase notes
 
 (Appended by each phase's final sub-phase.)
+
+- 2026-10-06 Phase 1 (testing-csv-ingestion-contract): shipped valid-then-invalid, hostile-value and asymmetric
+  non-default-weight fixtures in `ranking.test.ts`; upload guards moved from `dashboard.astro` into `src/lib/upload.ts`
+  with `upload.test.ts`; two smoke steps for the error render and the asymmetric breakdown. Break-check: `return` →
+  `continue` in the `ranking.ts` row loop turns 4 tests red. Left out: per-case messages (S-03), oversized-file smoke,
+  chunked-body limits (platform behaviour).
 
 ## 7. What We Deliberately Don't Test
 
