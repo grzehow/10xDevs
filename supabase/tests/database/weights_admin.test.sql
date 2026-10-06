@@ -4,7 +4,7 @@
 -- so earlier assertions can count rows exactly. The file rolls back, so changed weights never leak.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(26);
+select plan(31);
 
 -- Admin: column grant and atomic save
 set local role authenticated;
@@ -67,6 +67,21 @@ select throws_ok($$ select public.update_scoring_weights(2, 6, 13, 16, 4, 2) $$,
   'anon rpc: denied');
 select throws_ok($$ select * from public.scoring_weight_changes $$, '42501', null,
   'anon: history select denied');
+-- The anon rpc call above would also fail on the function's own role check, so pin the EXECUTE revokes directly.
+select ok(
+  not has_function_privilege('anon', 'public.update_scoring_weights(numeric,numeric,numeric,numeric,numeric,numeric)', 'execute'),
+  'anon: execute on update_scoring_weights revoked');
+select ok(
+  not has_function_privilege('authenticated', 'public.log_scoring_weight_change()', 'execute'),
+  'authenticated: execute on the history trigger function revoked');
+
+-- Signed in without a role claim: fails closed
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated"}';
+
+select throws_ok($$ select public.update_scoring_weights(2, 6, 13, 16, 4, 2) $$, '42501', null,
+  'no role: rpc denied');
+select is_empty($$ select * from public.scoring_weight_changes $$, 'no role: history sees nothing');
 
 -- Superuser view: the denied calls above wrote no history
 reset role;
@@ -100,6 +115,14 @@ select lives_ok($$ update public.scoring_weights set value = 1000 where key = 'm
 select lives_ok($$ update public.scoring_weights set value = 2.5 where key = 'minor' $$,
   'check: two-decimal value accepted');
 update public.scoring_weights set value = 5.0 where key = 'minor';
+
+-- A missing weight row must fail the save, not silently write fewer than six (superuser removes it; file rolls back).
+delete from public.scoring_weights where key = 'service';
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","app_metadata":{"role":"admin"}}';
+select throws_ok($$ select public.update_scoring_weights(1, 5, 12, 15, 3, 1) $$, 'P0001', null,
+  'admin rpc: fewer than six weight rows fails the save');
+reset role;
 
 select * from finish();
 rollback;

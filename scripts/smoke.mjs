@@ -5,7 +5,8 @@ const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 // Seeded operator from supabase/seed.sql; override both for a cloud project.
 const email = process.env.SMOKE_EMAIL ?? "operator@noc.local";
 const password = process.env.SMOKE_PASSWORD ?? "Operator-Dev-Passw0rd!";
-// Seeded admin; the admin steps change `major` to 12 and back, so against a cloud project they write two history rows.
+// Seeded admin. The admin steps read the current weights, set `major` to 12 and write the originals back, so against a
+// cloud project they leave the weights as found and add two history rows.
 const adminEmail = process.env.SMOKE_ADMIN_EMAIL ?? "admin@noc.local";
 const adminPassword = process.env.SMOKE_ADMIN_PASSWORD ?? "Admin-Dev-Passw0rd!";
 const jar = new Map();
@@ -45,9 +46,31 @@ function csvUpload(csv) {
   return body;
 }
 
-const defaultWeights = { warning: 1, minor: 5, major: 10, critical: 15, customer: 3, service: 1 };
+const WEIGHT_KEYS = ["warning", "minor", "major", "critical", "customer", "service"];
+const scoreFormat = new Intl.NumberFormat("pl-PL", { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+const asNumber = (shown) => Number(shown.replace(",", "."));
+
+// The weights exactly as the form shows them (pl-PL strings such as "2,5"), read before the first write so they can
+// be restored byte for byte. Stays null if the read fails.
+let original = null;
+
+async function readWeights() {
+  const response = await request("/admin/weights");
+  const found = {};
+  for (const key of WEIGHT_KEYS) {
+    const tag = new RegExp(`<input[^>]*name="${key}"[^>]*>`).exec(response.text)?.[0];
+    const value = tag === undefined ? undefined : /value="([^"]*)"/.exec(tag)?.[1];
+    if (value !== undefined) found[key] = value;
+  }
+  original = Object.keys(found).length === WEIGHT_KEYS.length ? found : null;
+  return response;
+}
+
+// Never writes unless the current weights were read, so a failed read cannot overwrite them with made-up values.
 const saveWeights = (overrides = {}) =>
-  request("/admin/weights", { method: "POST", form: { ...defaultWeights, ...overrides } });
+  original
+    ? request("/admin/weights", { method: "POST", form: { ...original, ...overrides } })
+    : Promise.resolve({ status: 0, location: "", text: "current weights were not read" });
 
 function clearSession() {
   jar.clear();
@@ -99,13 +122,15 @@ const steps = [
   ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
-  // Admin part. Steps never abort the run, so the restore step always executes and leaves major=10.
+  // Admin part. A step that fails or throws is recorded and the run goes on, so the restore step still executes and
+  // writes back the weights read below.
   ["cookie jar cleared", clearSession, { status: 200 }],
   [
     "admin signin accepts correct password",
     () => request("/api/auth/signin", { method: "POST", form: { email: adminEmail, password: adminPassword } }),
     { status: 302, location: "/" },
   ],
+  ["admin reads current weights", readWeights, { status: 200, bodyCheck: () => original !== null }],
   ["admin saves major=12", () => saveWeights({ major: 12 }), { status: 302, location: "/admin/weights?saved=1" }],
   [
     "upload ranks with the new weights",
@@ -116,11 +141,14 @@ const steps = [
       }),
     {
       status: 200,
-      // 12 + 3×2 + 1×5 = 23, rendered with the pl-PL formatter on the real runtime.
-      bodyCheck: (text) => text.includes('data-ticket-id="SMOKE-WEIGHTS"') && text.includes("23,0"),
+      // major 12 + customer × 2 + service × 5 (23,0 with the PRD defaults), rendered with the pl-PL formatter.
+      bodyCheck: (text) =>
+        original !== null &&
+        text.includes('data-ticket-id="SMOKE-WEIGHTS"') &&
+        text.includes(scoreFormat.format(12 + asNumber(original.customer) * 2 + asNumber(original.service) * 5)),
     },
   ],
-  ["admin restores defaults", () => saveWeights(), { status: 302, location: "/admin/weights?saved=1" }],
+  ["admin restores original weights", () => saveWeights(), { status: 302, location: "/admin/weights?saved=1" }],
   ["admin signout", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   [
     "weights screen redirects after admin signout",
@@ -131,7 +159,12 @@ const steps = [
 
 let failed = 0;
 for (const [name, run, expected] of steps) {
-  const actual = await run();
+  let actual;
+  try {
+    actual = await run();
+  } catch (error) {
+    actual = { status: 0, location: String(error), text: "" };
+  }
   const ok =
     actual.status === expected.status &&
     (expected.location === undefined || actual.location.startsWith(expected.location)) &&

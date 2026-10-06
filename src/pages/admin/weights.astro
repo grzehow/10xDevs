@@ -40,6 +40,10 @@ if (Astro.request.method === "POST") {
         })
       : null;
     if (result && !result.error) return Astro.redirect("/admin/weights?saved=1");
+    // Log the error code only (never the message or the values); Workers observability collects it.
+    // eslint-disable-next-line no-console
+    console.error("update_scoring_weights failed:", result?.error.code ?? "no client");
+    Astro.response.status = 500;
     inputs = { ...v };
     formError = SAVE_ERROR;
   } else {
@@ -96,6 +100,7 @@ const saved = Astro.url.searchParams.get("saved") === "1";
                 type="text"
                 inputmode="decimal"
                 autocomplete="off"
+                maxlength="7"
                 value={fields[key]}
                 aria-invalid={errors[key] ? "true" : undefined}
                 aria-describedby={errors[key] ? `${key}-error` : undefined}
@@ -125,3 +130,8 @@ const saved = Astro.url.searchParams.get("saved") === "1";
     </div>
   </div>
 </Layout>
+
+<script>
+  // After a rejected submit the page is a full reload; put focus on the first field that has an error.
+  document.querySelector<HTMLInputElement>('input[aria-invalid="true"]')?.focus();
+</script>

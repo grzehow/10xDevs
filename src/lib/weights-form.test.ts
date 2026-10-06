@@ -33,6 +33,10 @@ void describe("parseWeightsForm", () => {
       ["0", "0"],
       ["1000", "1000"],
       ["1000.00", "1000.00"],
+      ["1000,00", "1000.00"],
+      ["0,00", "0.00"],
+      ["007", "007"],
+      [" 2,5\t", "2.5"],
     ] as const) {
       const result = parseWeightsForm(form({ major: input }));
       assert.ok(result.ok, input);
@@ -61,6 +65,22 @@ void describe("parseWeightsForm", () => {
   void test("rejects empty and blank", () => {
     assert.equal(errorFor(""), "Podaj wartość.");
     assert.equal(errorFor(" "), "Podaj wartość.");
+  });
+
+  void test("accepts ASCII digits only", () => {
+    // Arabic-Indic and fullwidth digits would parse as numbers elsewhere; the form must not let them through.
+    for (const input of ["٣", "１２", "2,٥"]) {
+      assert.equal(errorFor(input), INVALID, input);
+    }
+  });
+
+  void test("treats a file in a field as empty", () => {
+    const data = form();
+    data.set("major", new File(["2"], "weights.txt"));
+    const result = parseWeightsForm(data);
+    assert.ok(!result.ok);
+    assert.equal(result.errors.major, "Podaj wartość.");
+    assert.equal(result.raw.major, "");
   });
 
   void test("rejects a missing field and re-renders raw values", () => {
