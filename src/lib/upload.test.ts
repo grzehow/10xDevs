@@ -113,4 +113,17 @@ void describe("rankUpload", () => {
       weights: W,
     });
   });
+
+  void test("reads weights on every call", async () => {
+    const first = await rankUpload(upload(csvFile("T1,major,2,5")), loader().load);
+    assert.ok(first.ok);
+    assert.equal(first.tickets[0]?.score, 21);
+
+    const stub = loader({ warning: 1, minor: 5, major: 12, critical: 15, customer: 4, service: 2 });
+    const second = await rankUpload(upload(csvFile("T1,major,2,5")), stub.load);
+    assert.ok(second.ok);
+    assert.deepEqual(second.tickets[0]?.points, { severity: 12, customers: 8, services: 10 });
+    assert.equal(second.tickets[0]?.score, 30);
+    assert.equal(stub.calls, 1);
+  });
 });

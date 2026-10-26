@@ -5,8 +5,8 @@ const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 // Seeded operator from supabase/seed.sql; override both for a cloud project.
 const email = process.env.SMOKE_EMAIL ?? "operator@noc.local";
 const password = process.env.SMOKE_PASSWORD ?? "Operator-Dev-Passw0rd!";
-// Seeded admin. The admin steps read the current weights, set `major` to 12 and write the originals back, so against a
-// cloud project they leave the weights as found and add two history rows.
+// Seeded admin. The admin steps read the current weights, set `major`, `customer` and `service` to 12, 4 and 2 and write
+// the originals back, so against a cloud project they leave the weights as found and add up to six history rows.
 const adminEmail = process.env.SMOKE_ADMIN_EMAIL ?? "admin@noc.local";
 const adminPassword = process.env.SMOKE_ADMIN_PASSWORD ?? "Admin-Dev-Passw0rd!";
 const jar = new Map();
@@ -47,8 +47,6 @@ function csvUpload(csv) {
 }
 
 const WEIGHT_KEYS = ["warning", "minor", "major", "critical", "customer", "service"];
-const scoreFormat = new Intl.NumberFormat("pl-PL", { minimumFractionDigits: 1, maximumFractionDigits: 2 });
-const asNumber = (shown) => Number(shown.replace(",", "."));
 
 // The weights exactly as the form shows them (pl-PL strings such as "2,5"), read before the first write so they can
 // be restored byte for byte. Stays null if the read fails.
@@ -162,6 +160,31 @@ const steps = [
         /5 × 1,0 =\s*5,0/.test(text),
     },
   ],
+  [
+    "dashboard renders the same list for the same file",
+    async () => {
+      // PRD default weights, as in the 19,0 step: C 15+0+0 = 15 and M 10+0+5 = 15 (higher severity first); B, a, b
+      // 5+3+1 = 9 (code-point order B < a < b; localeCompare would differ); W 1+6+0 = 7.
+      const csv =
+        "ticket_id,severity,number_of_customers,number_of_services\nREPRO-b,minor,1,1\nREPRO-W,warning,2,0\n" +
+        "REPRO-M,major,0,5\nREPRO-a,minor,1,1\nREPRO-C,critical,0,0\nREPRO-B,minor,1,1\n";
+      const first = await request("/dashboard", { method: "POST", multipart: csvUpload(csv) });
+      const second = await request("/dashboard", { method: "POST", multipart: csvUpload(csv) });
+      return { ...first, status: first.status === 200 ? second.status : first.status, second };
+    },
+    {
+      status: 200,
+      bodyCheck: (text, actual) => {
+        const list = (body) => /<ol[\s\S]*?<\/ol>/.exec(body)?.[0] ?? "";
+        const ids = [...list(text).matchAll(/data-ticket-id="([^"]+)"/g)].map((m) => m[1]);
+        return (
+          list(text) !== "" &&
+          list(text) === list(actual.second.text) &&
+          ids.join() === "REPRO-C,REPRO-M,REPRO-B,REPRO-a,REPRO-b,REPRO-W"
+        );
+      },
+    },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   // Admin part. A step that fails or throws is recorded and the run goes on, so the restore step still executes and
@@ -173,7 +196,11 @@ const steps = [
     { status: 302, location: "/" },
   ],
   ["admin reads current weights", readWeights, { status: 200, bodyCheck: () => original !== null }],
-  ["admin saves major=12", () => saveWeights({ major: 12 }), { status: 302, location: "/admin/weights?saved=1" }],
+  [
+    "admin saves major=12, customer=4, service=2",
+    () => saveWeights({ major: 12, customer: 4, service: 2 }),
+    { status: 302, location: "/admin/weights?saved=1" },
+  ],
   [
     "upload ranks with the new weights",
     () =>
@@ -183,11 +210,14 @@ const steps = [
       }),
     {
       status: 200,
-      // major 12 + customer × 2 + service × 5 (23,0 with the PRD defaults), rendered with the pl-PL formatter.
+      // 12 + 4×2 + 2×5 = 30. A customer fallback to 3 gives 28, a service fallback to 1 gives 25, a customer↔service
+      // swap 36, a stale major of 10 gives 28. original !== null: the restore step depends on the read.
       bodyCheck: (text) =>
         original !== null &&
         text.includes('data-ticket-id="SMOKE-WEIGHTS"') &&
-        text.includes(scoreFormat.format(12 + asNumber(original.customer) * 2 + asNumber(original.service) * 5)),
+        text.includes("30,0") &&
+        /2 × 4,0 =\s*8,0/.test(text) &&
+        /5 × 2,0 =\s*10,0/.test(text),
     },
   ],
   ["admin restores original weights", () => saveWeights(), { status: 302, location: "/admin/weights?saved=1" }],
@@ -210,7 +240,7 @@ for (const [name, run, expected] of steps) {
   const ok =
     actual.status === expected.status &&
     (expected.location === undefined || actual.location.startsWith(expected.location)) &&
-    (expected.bodyCheck === undefined || expected.bodyCheck(actual.text));
+    (expected.bodyCheck === undefined || expected.bodyCheck(actual.text, actual));
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;

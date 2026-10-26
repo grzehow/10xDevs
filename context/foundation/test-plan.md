@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-10-06
+> Last updated: 2026-10-26
 
 ## 1. Strategy
 
@@ -53,14 +53,14 @@ research's job, see §1 principle #3).
 
 ### Risk Response Guidance
 
-| Risk | What would prove protection                                                                                                                                                               | Must challenge                                                         | Context `/10x-research` must ground                                                                                                | Likely cheapest layer                                  | Anti-pattern to avoid                                           |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------- |
-| #1   | Any invalid row (including one after valid rows) rejects the whole file; an error alert renders and no partial list is ever rendered. Per-case messages naming the problem belong to S-03 | "Parser didn't throw" means the file was fully valid                   | Where parsing runs (client vs server), the upload error contract (`/dashboard` form POST), what exists today vs what S-03 will add | unit (parser) + integration (`/dashboard` upload POST) | Happy-path-only fixtures; asserting error text copied from code |
-| #2   | Two runs over the same file produce byte-identical serialized output, including tied scores                                                                                               | One test with distinct scores proves stability                         | Sort comparator, tie-break source, output serialization                                                                            | unit + one integration across the upload path          | Expected order computed with the function under test            |
-| #3   | A fixture with customers ≠ services yields the hand-derived PRD score                                                                                                                     | Symmetric fixtures (customers = services) can catch a swap             | Header-based vs position-based column mapping                                                                                      | unit                                                   | Fixtures where both counts are equal                            |
-| #4   | An operator session is denied on every admin route and on the weights write, at API and RLS level                                                                                         | A hidden button means no access                                        | Admin route guard, weights save RPC, RLS policies, what pgTAP and smoke already cover                                              | pgTAP + API integration                                | Testing only the UI redirect                                    |
-| #5   | After a weight change, the next upload's score reflects the new value without restart                                                                                                     | Defaults equal to seeded values hide a constants fallback              | Where scoring reads weights, any caching                                                                                           | integration with non-default weights                   | Fixtures using default weights                                  |
-| #6   | Each hostile value is rejected, never scored                                                                                                                                              | DB CHECK constraints protect uploaded values (they cover weights only) | Server-side validation vs any client-side checks                                                                                   | unit + integration                                     | Client-only validation tests                                    |
+| Risk | What would prove protection                                                                                                                                                               | Must challenge                                                                                                      | Context `/10x-research` must ground                                                                                                | Likely cheapest layer                                                                           | Anti-pattern to avoid                                                                       |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| #1   | Any invalid row (including one after valid rows) rejects the whole file; an error alert renders and no partial list is ever rendered. Per-case messages naming the problem belong to S-03 | "Parser didn't throw" means the file was fully valid                                                                | Where parsing runs (client vs server), the upload error contract (`/dashboard` form POST), what exists today vs what S-03 will add | unit (parser) + integration (`/dashboard` upload POST)                                          | Happy-path-only fixtures; asserting error text copied from code                             |
+| #2   | Two uploads of the same file render a byte-identical ranked list, including score, float-equal and id ties. The ranking result is already covered at unit level; the rendered list is not | One test with distinct scores proves stability                                                                      | Tie-break chain, what the rendered list depends on beyond the ranking result                                                       | smoke (render comparison); unit already covers the ranking result                               | Expected order computed with the function under test; comparing a page that renders nothing |
+| #3   | A fixture with customers ≠ services yields the hand-derived PRD score                                                                                                                     | Symmetric fixtures (customers = services) can catch a swap                                                          | Header-based vs position-based column mapping                                                                                      | unit                                                                                            | Fixtures where both counts are equal                                                        |
+| #4   | An operator session is denied on every admin route and on the weights write, at API and RLS level                                                                                         | A hidden button means no access                                                                                     | Admin route guard, weights save RPC, RLS policies, what pgTAP and smoke already cover                                              | pgTAP + API integration                                                                         | Testing only the UI redirect                                                                |
+| #5   | After a weight change, the next upload scores with every changed value (severity, customer and service) without restart. Guards a future regression; no cache or fallback exists today    | Defaults equal to seeded values hide a constants fallback; the existing round-trip changes one severity weight only | Where scoring reads weights, any caching, how the admin round-trip restores state                                                  | smoke round-trip with non-default customer/service weights + unit (no memoization across calls) | Fixtures using default weights; changing only one weight                                    |
+| #6   | Each hostile value is rejected, never scored                                                                                                                                              | DB CHECK constraints protect uploaded values (they cover weights only)                                              | Server-side validation vs any client-side checks                                                                                   | unit + integration                                                                              | Client-only validation tests                                                                |
 
 ## 3. Phased Rollout
 
@@ -68,11 +68,11 @@ Each row is a discrete rollout phase that will open its own change folder
 via `/10x-new`. Status moves left-to-right through the values below; the
 orchestrator updates Status as artifacts appear on disk.
 
-| #   | Phase name                               | Goal (one line)                                                               | Risks covered | Test types                        | Status      | Change folder                  |
-| --- | ---------------------------------------- | ----------------------------------------------------------------------------- | ------------- | --------------------------------- | ----------- | ------------------------------ |
-| 1   | CSV ingestion contract                   | Prove a bad file is rejected whole and columns map correctly                  | #1, #3, #6    | unit + upload POST (unit + smoke) | complete    | testing-csv-ingestion-contract |
-| 2   | Ranking reproducibility and live weights | Prove byte-identical ordering and that saved weights apply on the next upload | #2, #5        | unit + integration                | not started | —                              |
-| 3   | Access split at API and RLS              | Prove the operator cannot reach or write anything admin-only                  | #4            | pgTAP + API integration           | not started | —                              |
+| #   | Phase name                               | Goal (one line)                                                               | Risks covered | Test types                        | Status      | Change folder                                |
+| --- | ---------------------------------------- | ----------------------------------------------------------------------------- | ------------- | --------------------------------- | ----------- | -------------------------------------------- |
+| 1   | CSV ingestion contract                   | Prove a bad file is rejected whole and columns map correctly                  | #1, #3, #6    | unit + upload POST (unit + smoke) | complete    | testing-csv-ingestion-contract               |
+| 2   | Ranking reproducibility and live weights | Prove byte-identical ordering and that saved weights apply on the next upload | #2, #5        | unit + integration                | complete    | testing-ranking-reproducibility-live-weights |
+| 3   | Access split at API and RLS              | Prove the operator cannot reach or write anything admin-only                  | #4            | pgTAP + API integration           | not started | —                                            |
 
 Status vocabulary: `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`.
 
@@ -137,7 +137,25 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.3 Adding a reproducibility or live-weights test
 
-- TBD — see §3 Phase 2 (byte-identical ordering with ties; non-default weights fixture).
+- **Render reproducibility**: `scripts/smoke.mjs`, operator section. Upload one CSV twice, slice `<ol`…`</ol>` from each
+  response, and require both slices non-empty and identical. Then assert one hand-derived `data-ticket-id` order. The
+  fixture rows go in shuffled and must include a score tie broken by severity and a score+severity tie broken by
+  code-point `ticket_id` order (`B` < `a` < `b`, which `localeCompare` would reorder). Compare only the list, never the
+  whole page.
+- **Live weights**: the admin round-trip in `scripts/smoke.mjs` (read → save → upload → restore). Set every weight under
+  test to a value that differs from its default and from the others (now `major` 12, `customer` 4, `service` 2). Assert
+  the total and each component line (`/2 × 4,0 =\s*8,0/`) as constants. In a comment, list the score each fallback or
+  swap would give, so a reviewer can see they all differ. Keep the restore step last; each weight whose original
+  differs adds two `scoring_weight_changes` rows per run.
+- **No memoization**: `src/lib/upload.test.ts`. Call `rankUpload` twice on the same file with two loaders returning
+  different weights, then assert the second result's `points` and the second loader's call count.
+- **Float-equal ties** stay at unit level in `ranking.test.ts`. The default weights are integers, so the smoke can't
+  produce one.
+- **Reference tests**: "dashboard renders the same list for the same file", "admin saves major=12, customer=4,
+  service=2", "upload ranks with the new weights" (`smoke.mjs`); "reads weights on every call" (`upload.test.ts`);
+  "float-equal scores still reach severity tie-break", "equal score and severity go to ticket_id ascending"
+  (`ranking.test.ts`).
+- **Run**: `npm test`; smoke via the CI `smoke` job (or `npm run smoke` against a running server).
 
 ### 6.4 Adding a database / RLS test
 
@@ -155,6 +173,10 @@ the relevant rollout phase ships; before that, the sub-section reads
   with `upload.test.ts`; two smoke steps for the error render and the asymmetric breakdown. Break-check: `return` →
   `continue` in the `ranking.ts` row loop turns 4 tests red. Left out: per-case messages (S-03), oversized-file smoke,
   chunked-body limits (platform behaviour).
+- 2026-10-26 Phase 2 (testing-ranking-reproducibility-live-weights): shipped the same-file render comparison smoke step,
+  a three-weight admin round-trip (`major`/`customer`/`service` → 12/4/2, expects 30,0) and the `rankUpload`
+  no-memoization unit test. No production code changed. Break-check: a module-level weights cache in `upload.ts`
+  turns "reads weights on every call" red. The smoke now adds up to 6 `scoring_weight_changes` rows per run (was up to 2).
 
 ## 7. What We Deliberately Don't Test
 
