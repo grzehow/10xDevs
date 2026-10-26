@@ -231,7 +231,7 @@ The §6.5 note records what shipped, the break-check result, and that the smoke 
 ## References
 
 - Research: `context/changes/testing-ranking-reproducibility-live-weights/research.md`
-- Test plan: `context/foundation/test-plan.md` §2 (#2, #5), §6
+- Test plan: `context/foundation/test-plan.md` §2 (#2, #5), §6. The §2 Risk Response Guidance rows for #2 and #5 were refined during planning to match research.md: smoke as the cheapest layer for #2, and the anti-patterns "comparing a page that renders nothing" and "changing only one weight".
 - Prior pattern: `context/changes/testing-csv-ingestion-contract/plan.md` (Phase 1 rollout)
 - Admin round-trip origin: `context/changes/weights-admin/plan.md:158`
 

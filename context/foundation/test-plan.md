@@ -145,8 +145,8 @@ the relevant rollout phase ships; before that, the sub-section reads
 - **Live weights**: the admin round-trip in `scripts/smoke.mjs` (read → save → upload → restore). Set every weight under
   test to a value that differs from its default and from the others (now `major` 12, `customer` 4, `service` 2). Assert
   the total and each component line (`/2 × 4,0 =\s*8,0/`) as constants. In a comment, list the score each fallback or
-  swap would give, so a reviewer can see they all differ. Keep the restore step last; each changed weight adds two
-  `scoring_weight_changes` rows per run.
+  swap would give, so a reviewer can see they all differ. Keep the restore step last; each weight whose original
+  differs adds two `scoring_weight_changes` rows per run.
 - **No memoization**: `src/lib/upload.test.ts`. Call `rankUpload` twice on the same file with two loaders returning
   different weights, then assert the second result's `points` and the second loader's call count.
 - **Float-equal ties** stay at unit level in `ranking.test.ts`. The default weights are integers, so the smoke can't
@@ -176,7 +176,7 @@ the relevant rollout phase ships; before that, the sub-section reads
 - 2026-10-26 Phase 2 (testing-ranking-reproducibility-live-weights): shipped the same-file render comparison smoke step,
   a three-weight admin round-trip (`major`/`customer`/`service` → 12/4/2, expects 30,0) and the `rankUpload`
   no-memoization unit test. No production code changed. Break-check: a module-level weights cache in `upload.ts`
-  turns "reads weights on every call" red. The smoke now adds 6 `scoring_weight_changes` rows per run (was 2).
+  turns "reads weights on every call" red. The smoke now adds up to 6 `scoring_weight_changes` rows per run (was up to 2).
 
 ## 7. What We Deliberately Don't Test
 

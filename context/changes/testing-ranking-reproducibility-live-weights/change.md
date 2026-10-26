@@ -1,7 +1,7 @@
 ---
 change_id: testing-ranking-reproducibility-live-weights
 title: Test rollout phase 2 — ranking reproducibility and live weights
-status: implemented
+status: impl_reviewed
 created: 2026-10-06
 updated: 2026-10-26
 archived_at: null

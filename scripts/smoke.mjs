@@ -6,7 +6,7 @@ const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 const email = process.env.SMOKE_EMAIL ?? "operator@noc.local";
 const password = process.env.SMOKE_PASSWORD ?? "Operator-Dev-Passw0rd!";
 // Seeded admin. The admin steps read the current weights, set `major`, `customer` and `service` to 12, 4 and 2 and write
-// the originals back, so against a cloud project they leave the weights as found and add six history rows.
+// the originals back, so against a cloud project they leave the weights as found and add up to six history rows.
 const adminEmail = process.env.SMOKE_ADMIN_EMAIL ?? "admin@noc.local";
 const adminPassword = process.env.SMOKE_ADMIN_PASSWORD ?? "Admin-Dev-Passw0rd!";
 const jar = new Map();
