@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-10-06
+> Last updated: 2026-10-26
 
 ## 1. Strategy
 
@@ -68,11 +68,11 @@ Each row is a discrete rollout phase that will open its own change folder
 via `/10x-new`. Status moves left-to-right through the values below; the
 orchestrator updates Status as artifacts appear on disk.
 
-| #   | Phase name                               | Goal (one line)                                                               | Risks covered | Test types                        | Status       | Change folder                                |
-| --- | ---------------------------------------- | ----------------------------------------------------------------------------- | ------------- | --------------------------------- | ------------ | -------------------------------------------- |
-| 1   | CSV ingestion contract                   | Prove a bad file is rejected whole and columns map correctly                  | #1, #3, #6    | unit + upload POST (unit + smoke) | complete     | testing-csv-ingestion-contract               |
-| 2   | Ranking reproducibility and live weights | Prove byte-identical ordering and that saved weights apply on the next upload | #2, #5        | unit + integration                | implementing | testing-ranking-reproducibility-live-weights |
-| 3   | Access split at API and RLS              | Prove the operator cannot reach or write anything admin-only                  | #4            | pgTAP + API integration           | not started  | —                                            |
+| #   | Phase name                               | Goal (one line)                                                               | Risks covered | Test types                        | Status      | Change folder                                |
+| --- | ---------------------------------------- | ----------------------------------------------------------------------------- | ------------- | --------------------------------- | ----------- | -------------------------------------------- |
+| 1   | CSV ingestion contract                   | Prove a bad file is rejected whole and columns map correctly                  | #1, #3, #6    | unit + upload POST (unit + smoke) | complete    | testing-csv-ingestion-contract               |
+| 2   | Ranking reproducibility and live weights | Prove byte-identical ordering and that saved weights apply on the next upload | #2, #5        | unit + integration                | complete    | testing-ranking-reproducibility-live-weights |
+| 3   | Access split at API and RLS              | Prove the operator cannot reach or write anything admin-only                  | #4            | pgTAP + API integration           | not started | —                                            |
 
 Status vocabulary: `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`.
 
@@ -137,7 +137,25 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.3 Adding a reproducibility or live-weights test
 
-- TBD — see §3 Phase 2 (byte-identical ordering with ties; non-default weights fixture).
+- **Render reproducibility**: `scripts/smoke.mjs`, operator section. Upload one CSV twice, slice `<ol`…`</ol>` from each
+  response, and require both slices non-empty and identical. Then assert one hand-derived `data-ticket-id` order. The
+  fixture rows go in shuffled and must include a score tie broken by severity and a score+severity tie broken by
+  code-point `ticket_id` order (`B` < `a` < `b`, which `localeCompare` would reorder). Compare only the list, never the
+  whole page.
+- **Live weights**: the admin round-trip in `scripts/smoke.mjs` (read → save → upload → restore). Set every weight under
+  test to a value that differs from its default and from the others (now `major` 12, `customer` 4, `service` 2). Assert
+  the total and each component line (`/2 × 4,0 =\s*8,0/`) as constants. In a comment, list the score each fallback or
+  swap would give, so a reviewer can see they all differ. Keep the restore step last; each changed weight adds two
+  `scoring_weight_changes` rows per run.
+- **No memoization**: `src/lib/upload.test.ts`. Call `rankUpload` twice on the same file with two loaders returning
+  different weights, then assert the second result's `points` and the second loader's call count.
+- **Float-equal ties** stay at unit level in `ranking.test.ts`. The default weights are integers, so the smoke can't
+  produce one.
+- **Reference tests**: "dashboard renders the same list for the same file", "admin saves major=12, customer=4,
+  service=2", "upload ranks with the new weights" (`smoke.mjs`); "reads weights on every call" (`upload.test.ts`);
+  "float-equal scores still reach severity tie-break", "equal score and severity go to ticket_id ascending"
+  (`ranking.test.ts`).
+- **Run**: `npm test`; smoke via the CI `smoke` job (or `npm run smoke` against a running server).
 
 ### 6.4 Adding a database / RLS test
 
@@ -155,6 +173,10 @@ the relevant rollout phase ships; before that, the sub-section reads
   with `upload.test.ts`; two smoke steps for the error render and the asymmetric breakdown. Break-check: `return` →
   `continue` in the `ranking.ts` row loop turns 4 tests red. Left out: per-case messages (S-03), oversized-file smoke,
   chunked-body limits (platform behaviour).
+- 2026-10-26 Phase 2 (testing-ranking-reproducibility-live-weights): shipped the same-file render comparison smoke step,
+  a three-weight admin round-trip (`major`/`customer`/`service` → 12/4/2, expects 30,0) and the `rankUpload`
+  no-memoization unit test. No production code changed. Break-check: a module-level weights cache in `upload.ts`
+  turns "reads weights on every call" red. The smoke now adds 6 `scoring_weight_changes` rows per run (was 2).
 
 ## 7. What We Deliberately Don't Test
 

@@ -243,22 +243,22 @@ The §6.5 note records what shipped, the break-check result, and that the smoke 
 
 #### Automated
 
-- [x] 1.1 New unit test passes: `npm test`
-- [x] 1.2 Break-check: cache the loaded weights in a module-level variable in `src/lib/upload.ts`, confirm `npm test` fails on `reads weights on every call`, then revert
-- [x] 1.3 Smoke script still parses: `node --check scripts/smoke.mjs`
-- [x] 1.4 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
+- [x] 1.1 New unit test passes: `npm test` — 6a28a10
+- [x] 1.2 Break-check: cache the loaded weights in a module-level variable in `src/lib/upload.ts`, confirm `npm test` fails on `reads weights on every call`, then revert — 6a28a10
+- [x] 1.3 Smoke script still parses: `node --check scripts/smoke.mjs` — 6a28a10
+- [x] 1.4 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build` — 6a28a10
 
 #### Manual
 
-- [x] 1.5 The fixture and expected values in both smoke steps match the hand derivations in this plan, and neither is computed from code under test
+- [x] 1.5 The fixture and expected values in both smoke steps match the hand derivations in this plan, and neither is computed from code under test — 6a28a10
 
 ### Phase 2: CI proof and test-plan cookbook
 
 #### Automated
 
-- [ ] 2.1 CI `smoke` job is green on the PR, including the new reproducibility step and the three-weight round-trip
-- [ ] 2.2 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
+- [x] 2.1 CI `smoke` job is green on the PR, including the new reproducibility step and the three-weight round-trip
+- [x] 2.2 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
 
 #### Manual
 
-- [ ] 2.3 test-plan §6.3 reads as a usable recipe for someone who hasn't seen this change
+- [x] 2.3 test-plan §6.3 reads as a usable recipe for someone who hasn't seen this change
