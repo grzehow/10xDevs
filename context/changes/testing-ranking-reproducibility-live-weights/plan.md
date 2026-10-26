@@ -256,9 +256,9 @@ The §6.5 note records what shipped, the break-check result, and that the smoke 
 
 #### Automated
 
-- [x] 2.1 CI `smoke` job is green on the PR, including the new reproducibility step and the three-weight round-trip
-- [x] 2.2 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build`
+- [x] 2.1 CI `smoke` job is green on the PR, including the new reproducibility step and the three-weight round-trip — 054a6e5
+- [x] 2.2 Full local CI equivalent passes: `npx astro sync && npm run lint && npm test && npx astro check && npm run build` — 054a6e5
 
 #### Manual
 
-- [x] 2.3 test-plan §6.3 reads as a usable recipe for someone who hasn't seen this change
+- [x] 2.3 test-plan §6.3 reads as a usable recipe for someone who hasn't seen this change — 054a6e5
